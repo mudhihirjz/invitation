@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>InviSys | Professional Invitation Card Designer</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Great+Vibes&family=Montserrat:wght@300;400;700&family=Lora:ital@0;1&family=Poppins:wght@400;600&family=Playfair+Display:wght@400;600;700;900&family=Dancing+Script:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Raleway:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(145deg, #0b2b33 0%, #0a1f2a 100%);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    #dropCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      display: block;
+    }
+
+    .content-overlay {
+      position: relative;
+      z-index: 10;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    /* Header Styles */
+    .invisys-header {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-radius: 2rem;
+      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.25);
+      padding: 0.7rem 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .branding-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .logo-icon {
+      background: linear-gradient(135deg, #1e5f6e, #0a3b47);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+    }
+    .logo-icon i { font-size: 1.5rem; color: #ffdf8c; }
+
+    .logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+    .logo-main {
+      font-weight: 800;
+      font-size: 1.4rem;
+      background: linear-gradient(125deg, #1a5f6e, #0c4e5c);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .logo-sub { font-size: 0.65rem; font-weight: 600; color: #2c6c7c; }
+
+    .nav-center { flex: 1; display: flex; justify-content: center; }
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      background: rgba(248, 250, 253, 0.8);
+      backdrop-filter: blur(4px);
+      padding: 0.4rem 1.5rem;
+      border-radius: 60px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #1a4f5e;
+      padding: 0.4rem 0.2rem;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .nav-item i { color: #2f7b8c; }
+    .nav-item:hover { color: #0e6b7c; border-bottom-color: #ffcd7e; }
+    .nav-item.active { color: #0f5e6e; border-bottom-color: #ffcd7e; }
+
+    .right-actions { display: flex; align-items: center; gap: 0.8rem; flex-shrink: 0; flex-wrap: wrap; }
+    
+    .premium-badge {
+      background: linear-gradient(135deg, #d4af37, #ffd700);
+      color: #1a4f5e;
+      padding: 0.25rem 0.8rem;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .premium-badge i { color: #ff6b35; font-size: 0.8rem; }
+    
+    .trial-badge {
+      background: linear-gradient(135deg, #ff8c42, #ff6b35);
+      color: white;
+      padding: 0.25rem 0.8rem;
+      border-radius: 40px;
+      font-size: 0.65rem;
+      font-weight: 600;
+    }
+
+    .upgrade-header-btn {
+      background: linear-gradient(135deg, #d99938, #c2862c);
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.2s;
+    }
+    .upgrade-header-btn:hover { transform: translateY(-2px); }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 0.25rem 0.8rem 0.25rem 0.7rem;
+      border-radius: 60px;
+      cursor: pointer;
+    }
+    .avatar-icon {
+      background: linear-gradient(145deg, #f3d2a2, #e5bc82);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: #2d4e5a;
+    }
+    .user-info { line-height: 1.2; }
+    .user-name { font-weight: 700; font-size: 0.8rem; color: #1b5e6e; }
+    .user-role { font-size: 0.65rem; color: #5d8b96; }
+
+    .lang-toggle {
+      background: rgba(245, 248, 250, 0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 220, 150, 0.8);
+      border-radius: 48px;
+      padding: 0.3rem 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+    }
+    .lang-switch-inner {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: rgba(255,250,235,0.7);
+      padding: 0.15rem 0.3rem;
+      border-radius: 32px;
+    }
+    .lang-option {
+      padding: 0.15rem 0.45rem;
+      font-weight: 600;
+      font-size: 0.65rem;
+      cursor: pointer;
+      border-radius: 28px;
+      transition: all 0.2s;
+    }
+    .lang-option.active {
+      background: #2c7a8a;
+      color: white;
+    }
+    .lang-option.inactive {
+      color: #2c6a78;
+    }
+
+    .logout-btn {
+      background: rgba(201, 90, 78, 0.9);
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .logout-btn:hover { background: #c95a4e; }
+
+    /* Page Styles */
+    .page { display: none; animation: fadeIn 0.3s ease; }
+    .page.active-page { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Card Styles */
+    .two-cards-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      border-radius: 1.2rem;
+      padding: 1.2rem;
+      box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 245, 205, 0.7);
+    }
+
+    .card-icon { font-size: 1.5rem; margin-bottom: 0.5rem; color: #d99938; }
+    .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.8rem; color: #1f6575; }
+
+    .form-group { margin-bottom: 0.8rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #2c6c7c;
+      margin-bottom: 0.25rem;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 0.5rem 0.7rem;
+      border: 1px solid #d4e0e8;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      background: rgba(255,255,255,0.9);
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+
+    /* Accordion Styles */
+    .accordion-section {
+      margin-bottom: 0.8rem;
+      border: 1px solid #e0e8f0;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .accordion-header {
+      background: #f8fafd;
+      padding: 0.6rem 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .accordion-header h3 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #1f6575;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .accordion-chevron { font-size: 0.7rem; color: #6f9eaa; transition: transform 0.3s ease; }
+    .accordion-chevron.rotated { transform: rotate(180deg); }
+    .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: rgba(255,255,255,0.5); }
+    .accordion-content.open { max-height: 400px; transition: max-height 0.3s ease-in; }
+    .accordion-inner { padding: 0.8rem; }
+
+    .template-options, .border-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+      gap: 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+    .template-item, .border-shape {
+      background: #f8fafd;
+      border: 2px solid #e0e8f0;
+      border-radius: 10px;
+      padding: 0.4rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .template-item.selected, .border-shape.selected { border-color: #d99938; background: #fff8e8; }
+    .color-preview { width: 40px; height: 40px; margin: 0 auto 0.2rem; border-radius: 50%; }
+    .border-shape { height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .border-shape i { font-size: 1.2rem; }
+
+    .font-option, .color-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      margin: 4px;
+      border: 2px solid #e0e8f0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+    .font-option.selected, .color-option.selected { border-color: #d99938; background: #fff8e8; }
+
+    /* Invitation Card Preview */
+    .invitation-preview { margin-top: 1rem; padding-top: 0.8rem; border-top: 2px dashed #e0e8f0; }
+    .preview-label { font-size: 0.65rem; font-weight: 600; color: #2c6c7c; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.4rem; }
+    
+    .invitation-card {
+      width: 100%;
+      max-width: 380px;
+      aspect-ratio: 3 / 4;
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      margin: 0 auto;
+    }
+    
+    .card-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      background-size: cover;
+      background-position: center;
+    }
+    .bg-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      background: rgba(0, 0, 0, 0.4);
+    }
+    .card-border {
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      z-index: 10;
+      pointer-events: none;
+      border-radius: 20px;
+    }
+    .card-border svg { width: 100%; height: 100%; }
+    .content-backdrop {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(2px);
+      border-radius: 12px;
+      z-index: 4;
+    }
+    .card-content {
+      position: relative;
+      z-index: 6;
+      width: 100%;
+      height: 100%;
+      padding: 20px 15px;
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      overflow-y: auto;
+    }
+    .center-watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-25deg);
+      z-index: 15;
+      font-size: 16px;
+      font-weight: bold;
+      color: rgba(255, 255, 255, 0.25);
+      background: rgba(0,0,0,0.15);
+      padding: 6px 16px;
+      border-radius: 40px;
+      letter-spacing: 3px;
+      white-space: nowrap;
+      pointer-events: none;
+      font-family: monospace;
+    }
+    .center-watermark.hidden { display: none; }
+    
+    .header-decoration { font-size: 18px; margin-bottom: 3px; }
+    .invitation-header { font-size: 11px; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; padding-bottom: 4px; display: inline-block; border-bottom: 1px solid rgba(255,255,255,0.4); }
+    .family-line { font-size: 10px; line-height: 1.4; margin-bottom: 6px; font-weight: 500; }
+    .couple-names { font-size: 16px; font-weight: bold; margin: 4px 0; line-height: 1.2; }
+    .couple-names .amp { font-size: 13px; margin: 1px 0; }
+    .event-details { font-size: 9.5px; line-height: 1.5; margin: 4px 0; }
+    .blessings { font-size: 9px; font-style: italic; margin: 5px 0; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 6px; }
+    .rsvp-section { font-size: 9px; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.3); }
+
+    .save-card-btn {
+      background: linear-gradient(105deg, #d99938, #c2862c);
+      border: none;
+      padding: 0.5rem 0.8rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      color: white;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 0.8rem;
+      transition: transform 0.2s;
+    }
+    .save-card-btn:hover { transform: translateY(-2px); }
+    .save-card-btn.disabled { opacity: 0.5; cursor: not-allowed; background: #a0a0a0; }
+    .save-card-btn.disabled:hover { transform: none; }
+
+    /* Upgrade Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: white;
+      border-radius: 24px;
+      padding: 1.5rem;
+      max-width: 900px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    .pricing-card {
+      border: 2px solid #e0e8f0;
+      border-radius: 16px;
+      padding: 1.2rem;
+      text-align: center;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .pricing-card.selected {
+      border-color: #d99938;
+      background: #fff8e8;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+    }
+    .pricing-card.recommended {
+      border-color: #ffd700;
+      position: relative;
+      overflow: hidden;
+    }
+    .recommended-badge {
+      position: absolute;
+      top: 10px;
+      right: -30px;
+      background: #ffd700;
+      color: #1a4f5e;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.2rem 2rem;
+      transform: rotate(45deg);
+    }
+    .price { font-size: 1.8rem; font-weight: 800; color: #1f6575; }
+    .feature-list { text-align: left; margin-top: 1rem; }
+    .feature-list li { font-size: 0.75rem; padding: 0.25rem 0; display: flex; align-items: center; gap: 0.5rem; }
+    .feature-list li i.fa-check { color: #10b981; width: 18px; }
+    .feature-list li i.fa-times { color: #ef4444; width: 18px; }
+    .feature-list li i.fa-star { color: #f59e0b; width: 18px; }
+
+    .promo-input {
+      border: 1px solid #e0e8f0;
+      border-radius: 40px;
+      padding: 0.5rem 1rem;
+      width: 100%;
+      font-size: 0.8rem;
+    }
+    .apply-btn {
+      background: #1f6575;
+      color: white;
+      border: none;
+      border-radius: 40px;
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .transaction-item {
+      background: #f8fafd;
+      border-radius: 12px;
+      padding: 0.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .premium-lock-overlay {
+      position: relative;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .premium-lock-overlay::after {
+      content: "🔒 Premium Feature";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      z-index: 20;
+    }
+
+    .gallery-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .gallery-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #1f6575;
+      background: rgba(255,255,255,0.9);
+      padding: 0.4rem 1.2rem;
+      border-radius: 60px;
+    }
+    .cards-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .saved-card {
+      background: rgba(255,255,255,0.95);
+      border-radius: 1rem;
+      padding: 1rem;
+    }
+
+    @media (max-width: 900px) {
+      .two-cards-row { grid-template-columns: 1fr; }
+      .modal-content { width: 95%; padding: 1rem; }
+      .pricing-card { margin-bottom: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="dropCanvas"></canvas>
+
+  <div class="content-overlay" id="appContainer"></div>
+
+  <script>
+    // ==================== RAIN CANVAS ====================
+    const canvas = document.getElementById('dropCanvas');
+    let ctx = canvas.getContext('2d');
+    let drops = [];
+    function initCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const dropCount = Math.min(40, Math.floor(window.innerWidth / 30));
+      drops = [];
+      for (let i = 0; i < dropCount; i++) {
+        drops.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: 1.5 + Math.random() * 3, speedY: 0.5 + Math.random() * 1.5, color: `rgba(180, 230, 255, ${0.1 + Math.random() * 0.2})` });
+      }
+    }
+    function drawDrops() { if (!ctx) return; ctx.clearRect(0, 0, canvas.width, canvas.height); for (let drop of drops) { ctx.beginPath(); ctx.arc(drop.x, drop.y, drop.radius, 0, Math.PI * 2); ctx.fillStyle = drop.color; ctx.fill(); } }
+    function updateDrops() { for (let drop of drops) { drop.y += drop.speedY; if (drop.y - drop.radius > canvas.height) { drop.y = -drop.radius; drop.x = Math.random() * canvas.width; } } }
+    function animateRain() { updateDrops(); drawDrops(); requestAnimationFrame(animateRain); }
+    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; initCanvas(); });
+    initCanvas(); animateRain();
+
+    // ==================== TRANSLATIONS ====================
+    const translations = {
+      en: {
+        brandSub: "Invitation Maker", home: "Home", myCards: "My Cards", upgrade: "Upgrade", logout: "Logout",
+        loginTitle: "Welcome Back", loginSubtitle: "Sign in to your account", registerTitle: "Create Account",
+        email: "Email Address", password: "Password", fullName: "Full Name", confirmPassword: "Confirm Password",
+        loginBtn: "Sign In", registerBtn: "Create Account", noAccount: "Don't have an account?", haveAccount: "Already have an account?",
+        registerHere: "Register here", loginHere: "Sign in here", invalidEmail: "Please enter a valid email address",
+        passwordShort: "Password must be at least 6 characters", passwordsMismatch: "Passwords do not match",
+        emailExists: "Email already registered", loginError: "Invalid email or password", registerSuccess: "Account created successfully!",
+        formTitle: "Create Invitation", designTitle: "Card Designer", previewLabel: "Live Preview", saveCard: "Save Invitation",
+        eventType: "Event Type", familyName: "Family Name", honorific: "Honorific Title", guestName: "Guest Name",
+        day: "Day", fullDate: "Date", time: "Time", placeName: "Venue", placeType: "Venue Type", city: "City",
+        blessings: "Blessings", rsvp: "RSVP Numbers", firstName: "Name", secondName: "Second Name",
+        optWedding: "Wedding", optSendoff: "Send-off", optBirthday: "Birthday", optKitchen: "Kitchen Party", optTahiri: "Tahiri", optMajilio: "Majilio",
+        accordion1: "Background Colors", accordion2: "Border Styles", accordion3: "Text Styles",
+        templateEmerald: "Emerald", templateGolden: "Golden", templateRose: "Rose", templateOcean: "Ocean", templateLavender: "Lavender", templateSunset: "Sunset", templateCustom: "Custom",
+        borderFlowers: "Flowers", borderBubbles: "Bubbles", borderStars: "Stars", borderHearts: "Hearts", borderLeaves: "Leaves",
+        fontFamily: "Font Family", textColor: "Text Color", fontClassic: "Classic", fontElegant: "Elegant", fontModern: "Modern", fontScript: "Script", fontClean: "Clean",
+        colorWhite: "White", colorGold: "Gold", colorPink: "Pink", colorCoral: "Coral", colorSky: "Sky", colorMint: "Mint", colorPlum: "Plum",
+        freePlan: "Free", monthlyPlan: "Monthly", lifetimePlan: "Lifetime", perMonth: "per month", oneTime: "one-time payment",
+        featuresUnlimited: "Unlimited cards", featuresAllTemplates: "All templates", featuresCustomBg: "Custom background", featuresRemoveWatermark: "Remove watermark",
+        featuresCancel: "Cancel anytime", featuresNeverExpires: "Never expires", featuresPriority: "Priority support", bestValue: "Best value",
+        promoPlaceholder: "Enter promo code", apply: "Apply", paymentMethod: "Select Payment Method", subtotal: "Subtotal", discount: "Discount", total: "Total",
+        upgradeNow: "Upgrade Now", securePayment: "Secure payment simulation. No real charges.",
+        cardSaved: "Card saved!", limitReached: "Free limit reached! You can only create up to 5 cards on the free plan. Upgrade to premium for unlimited cards!",
+        upgradeToUnlock: "Upgrade to unlock", premiumFeature: "Premium Feature", daysLeft: "days left", freeTrial: "FREE TRIAL"
+      },
+      sw: {
+        brandSub: "Mtengeneza Mialiko", home: "Nyumbani", myCards: "Kadi Zangu", upgrade: "Boresha", logout: "Toka",
+        loginTitle: "Karibu Tena", loginSubtitle: "Ingia kwenye akaunti yako", registerTitle: "Unda Akaunti",
+        email: "Barua pepe", password: "Nywila", fullName: "Jina Kamili", confirmPassword: "Thibitisha Nywila",
+        loginBtn: "Ingia", registerBtn: "Unda Akaunti", noAccount: "Huna akaunti?", haveAccount: "Tayari una akaunti?",
+        registerHere: "Jisajili hapa", loginHere: "Ingia hapa", invalidEmail: "Tafadhali ingiza barua pepe sahihi",
+        passwordShort: "Nywila lazima iwe na angalau herufi 6", passwordsMismatch: "Nywila hazifanani",
+        emailExists: "Barua pepe tayari imesajiliwa", loginError: "Barua pepe au nywila si sahihi", registerSuccess: "Akaunti imeundwa kikamilifu!",
+        formTitle: "Tengeneza Mwaliko", designTitle: "Kibuni cha Kadi", previewLabel: "Muonekano Halisi", saveCard: "Hifadhi Mwaliko",
+        eventType: "Aina ya Sherehe", familyName: "Jina la Familia", honorific: "Cheo / Heshima", guestName: "Jina la Mwalikwa",
+        day: "Siku", fullDate: "Tarehe", time: "Muda", placeName: "Mahali", placeType: "Aina ya Eneo", city: "Jiji",
+        blessings: "Baraka", rsvp: "Namba za RSVP", firstName: "Jina", secondName: "Jina la pili",
+        optWedding: "Harusi", optSendoff: "Send-off", optBirthday: "Siku ya Kuzaliwa", optKitchen: "Kitchen Party", optTahiri: "Tahiri", optMajilio: "Majilio",
+        accordion1: "Rangi za Mandhari", accordion2: "Mitindo ya Ukingo", accordion3: "Mitindo ya Maandishi",
+        templateEmerald: "Zumrud", templateGolden: "Dhahabu", templateRose: "Waridi", templateOcean: "Bahari", templateLavender: "Lavenda", templateSunset: "Machweo", templateCustom: "Maalum",
+        borderFlowers: "Maua", borderBubbles: "Mapovu", borderStars: "Nyota", borderHearts: "Mioyo", borderLeaves: "Majani",
+        fontFamily: "Aina ya Fonti", textColor: "Rangi ya Maandishi", fontClassic: "Kawaida", fontElegant: "Kifahari", fontModern: "Kisasa", fontScript: "Mwandiko", fontClean: "Safi",
+        colorWhite: "Nyeupe", colorGold: "Dhahabu", colorPink: "Waridi", colorCoral: "Matumbawe", colorSky: "Anga", colorMint: "Minti", colorPlum: "Zambarau",
+        freePlan: "Bure", monthlyPlan: "Kila Mwezi", lifetimePlan: "Maisha Yote", perMonth: "kwa mwezi", oneTime: "malipo ya mara moja",
+        featuresUnlimited: "Kadi zisizo na kikomo", featuresAllTemplates: "Rangi zote", featuresCustomBg: "Picha maalum", featuresRemoveWatermark: "Ondoa watermark",
+        featuresCancel: "Ghairi wakati wowote", featuresNeverExpires: "Haiishi kamwe", featuresPriority: "Usaidizi wa haraka", bestValue: "Thamani bora",
+        promoPlaceholder: "Weka kodi ya promo", apply: "Weka", paymentMethod: "Chagua Njia ya Malipo", subtotal: "Jumla ndogo", discount: "Punguzo", total: "Jumla",
+        upgradeNow: "Boresha Sasa", securePayment: "Malipo ya simulation. Hakuna malipo halisi.",
+        cardSaved: "Kadi imehifadhiwa!", limitReached: "Kikomo cha bure kimefikwa! Unaweza kuunda kadi 5 tu kwenye mpango wa bure. Boresha hadi premium kwa kadi zisizo na kikomo!",
+        upgradeToUnlock: "Boresha ili kufungua", premiumFeature: "Kipengele cha Premium", daysLeft: "siku zilizobaki", freeTrial: "JARIBIO LA BURE"
+      },
+      fr: {
+        brandSub: "Créateur d'Invitations", home: "Accueil", myCards: "Mes Cartes", upgrade: "Améliorer", logout: "Déconnexion",
+        loginTitle: "Bon Retour", loginSubtitle: "Connectez-vous à votre compte", registerTitle: "Créer un Compte",
+        email: "Adresse e-mail", password: "Mot de passe", fullName: "Nom Complet", confirmPassword: "Confirmer le mot de passe",
+        loginBtn: "Se connecter", registerBtn: "Créer un compte", noAccount: "Pas de compte?", haveAccount: "Déjà un compte?",
+        registerHere: "Inscrivez-vous ici", loginHere: "Connectez-vous ici", invalidEmail: "Veuillez entrer une adresse e-mail valide",
+        passwordShort: "Le mot de passe doit contenir au moins 6 caractères", passwordsMismatch: "Les mots de passe ne correspondent pas",
+        emailExists: "E-mail déjà enregistré", loginError: "E-mail ou mot de passe invalide", registerSuccess: "Compte créé avec succès!",
+        formTitle: "Créer une Invitation", designTitle: "Designer de Carte", previewLabel: "Aperçu en Direct", saveCard: "Enregistrer l'Invitation",
+        eventType: "Type d'Événement", familyName: "Nom de la Famille", honorific: "Titre Honorifique", guestName: "Nom de l'Invité",
+        day: "Jour", fullDate: "Date", time: "Heure", placeName: "Lieu", placeType: "Type de Lieu", city: "Ville",
+        blessings: "Bénédictions", rsvp: "Numéros RSVP", firstName: "Nom", secondName: "Deuxième Nom",
+        optWedding: "Mariage", optSendoff: "Départ", optBirthday: "Anniversaire", optKitchen: "Kitchen Party", optTahiri: "Tahiri", optMajilio: "Majilio",
+        accordion1: "Couleurs d'Arrière-plan", accordion2: "Styles de Bordure", accordion3: "Styles de Texte",
+        templateEmerald: "Émeraude", templateGolden: "Doré", templateRose: "Rose", templateOcean: "Océan", templateLavender: "Lavande", templateSunset: "Coucher de soleil", templateCustom: "Personnalisé",
+        borderFlowers: "Fleurs", borderBubbles: "Bulles", borderStars: "Étoiles", borderHearts: "Cœurs", borderLeaves: "Feuilles",
+        fontFamily: "Famille de Polices", textColor: "Couleur du Texte", fontClassic: "Classique", fontElegant: "Élégant", fontModern: "Moderne", fontScript: "Script", fontClean: "Propre",
+        colorWhite: "Blanc", colorGold: "Doré", colorPink: "Rose", colorCoral: "Corail", colorSky: "Ciel", colorMint: "Menthe", colorPlum: "Prune",
+        freePlan: "Gratuit", monthlyPlan: "Mensuel", lifetimePlan: "À Vie", perMonth: "par mois", oneTime: "paiement unique",
+        featuresUnlimited: "Cartes illimitées", featuresAllTemplates: "Tous les modèles", featuresCustomBg: "Arrière-plan personnalisé", featuresRemoveWatermark: "Supprimer le filigrane",
+        featuresCancel: "Annulez à tout moment", featuresNeverExpires: "N'expire jamais", featuresPriority: "Support prioritaire", bestValue: "Meilleure valeur",
+        promoPlaceholder: "Entrez le code promo", apply: "Appliquer", paymentMethod: "Sélectionnez le mode de paiement", subtotal: "Sous-total", discount: "Réduction", total: "Total",
+        upgradeNow: "Améliorer Maintenant", securePayment: "Simulation de paiement sécurisé. Aucun frais réel.",
+        cardSaved: "Carte enregistrée!", limitReached: "Limite gratuite atteinte! Vous ne pouvez créer que 5 cartes avec le forfait gratuit. Passez au premium pour des cartes illimitées!",
+        upgradeToUnlock: "Améliorez pour débloquer", premiumFeature: "Fonctionnalité Premium", daysLeft: "jours restants", freeTrial: "ESSAI GRATUIT"
+      }
+    };
+
+    // ==================== AUTH & SUBSCRIPTION SYSTEM ====================
+    let currentUser = JSON.parse(localStorage.getItem('invisys_currentUser') || 'null');
+    let users = JSON.parse(localStorage.getItem('invisys_users') || '[]');
+    let transactions = JSON.parse(localStorage.getItem('invisys_transactions') || '[]');
+    let currentLang = 'en';
+    let currentPage = 'creator';
+
+    // Design state
+    let customImageData = null;
+    let currentTemplate = 'emerald';
+    let currentBorder = 'flowers';
+    let currentFont = "'Playfair Display', serif";
+    let currentTextColor = '#FFFFFF';
+
+    const bgTemplates = {
+      emerald: 'linear-gradient(135deg, #043927 0%, #0a5c3e 50%, #043927 100%)',
+      golden: 'linear-gradient(135deg, #8B7355 0%, #DAA520 50%, #8B7355 100%)',
+      rose: 'linear-gradient(135deg, #ff758c 0%, #ff7eb3 50%, #ff758c 100%)',
+      ocean: 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)',
+      lavender: 'linear-gradient(135deg, #6a3093 0%, #a044ff 50%, #6a3093 100%)',
+      sunset: 'linear-gradient(135deg, #f7971e 0%, #ffd200 50%, #f7971e 100%)',
+      custom: ''
+    };
+
+    // Promo codes
+    const promoCodes = {
+      'WELCOME20': { discount: 20, type: 'percentage', validFor: ['monthly', 'lifetime'] },
+      'INVI50': { discount: 50, type: 'percentage', validFor: ['lifetime'] },
+      'TRIAL2024': { discount: 100, type: 'percentage', validFor: ['trial'], isTrial: true, trialDays: 1 }
+    };
+
+    function hasPremiumAccess(user) {
+      if (!user?.subscription) return false;
+      if (user.subscription.type === 'premium_lifetime' && user.subscription.isActive) return true;
+      if (user.subscription.type === 'premium_monthly' && user.subscription.isActive) {
+        const endDate = new Date(user.subscription.endDate);
+        return endDate > new Date();
+      }
+      if (user.subscription.type === 'trial' && user.subscription.isActive) {
+        const endDate = new Date(user.subscription.endDate);
+        return endDate > new Date();
+      }
+      return false;
+    }
+
+    function checkAndUpdateSubscription() {
+      if (!currentUser?.subscription) return false;
+      const sub = currentUser.subscription;
+      if ((sub.type === 'premium_monthly' || sub.type === 'trial') && sub.isActive) {
+        const endDate = new Date(sub.endDate);
+        if (endDate <= new Date()) {
+          currentUser.subscription.isActive = false;
+          currentUser.subscription.type = 'free';
+          saveCurrentUser();
+          showToast(translations[currentLang].limitReached, 'warning');
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function getRemainingDays(user) {
+      if (!user?.subscription?.endDate) return 0;
+      const end = new Date(user.subscription.endDate);
+      const now = new Date();
+      const diff = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+      return diff > 0 ? diff : 0;
+    }
+
+    function validatePromoCode(code, packageType) {
+      const promo = promoCodes[code.toUpperCase()];
+      if (!promo) return { valid: false, message: translations[currentLang].invalidPromo || 'Invalid promo code' };
+      if (!promo.validFor.includes(packageType)) {
+        return { valid: false, message: `Promo code not valid for ${packageType} package` };
+      }
+      return { valid: true, discount: promo.discount, type: promo.type, isTrial: promo.isTrial || false, trialDays: promo.trialDays || 1 };
+    }
+
+    async function processPayment(packageType, paymentMethod, promoCode = null) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          let originalAmount = packageType === 'monthly' ? 10000 : packageType === 'lifetime' ? 150000 : 0;
+          let discount = 0;
+          let finalAmount = originalAmount;
+          let usedPromo = null;
+          let isTrial = false;
+          let trialDays = 0;
+
+          if (promoCode) {
+            const promoResult = validatePromoCode(promoCode, packageType);
+            if (promoResult.valid) {
+              if (promoResult.isTrial) {
+                isTrial = true;
+                trialDays = promoResult.trialDays;
+                finalAmount = 0;
+              } else {
+                discount = promoResult.discount;
+                finalAmount = originalAmount - (originalAmount * discount / 100);
+              }
+              usedPromo = promoCode.toUpperCase();
+            }
+          }
+
+          const transactionId = 'TXN_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8).toUpperCase();
+          
+          const transaction = {
+            id: transactionId, userId: currentUser.id, packageType: packageType,
+            originalAmount: originalAmount, discount: discount, finalAmount: finalAmount,
+            promoCode: usedPromo, paymentMethod: paymentMethod, status: 'completed',
+            createdAt: new Date().toISOString(), isTrial: isTrial, trialDays: trialDays
+          };
+          transactions.unshift(transaction);
+          localStorage.setItem('invisys_transactions', JSON.stringify(transactions));
+          
+          const endDate = isTrial ? new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000).toISOString() :
+                          packageType === 'monthly' ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : null;
+          
+          currentUser.subscription = {
+            type: isTrial ? 'trial' : (packageType === 'monthly' ? 'premium_monthly' : 'premium_lifetime'),
+            startDate: new Date().toISOString(), endDate: endDate, isActive: true,
+            paymentStatus: 'paid', transactionId: transactionId
+          };
+          saveCurrentUser();
+          resolve({ success: true, transactionId, finalAmount, isTrial });
+        }, 1500);
+      });
+    }
+
+    function saveUsers() { localStorage.setItem('invisys_users', JSON.stringify(users)); }
+    function saveCurrentUser() { localStorage.setItem('invisys_currentUser', JSON.stringify(currentUser)); }
+    
+    function showToast(msg, type = 'info') {
+      const toast = document.createElement('div');
+      toast.textContent = msg;
+      toast.style.cssText = `position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:${type === 'error' ? '#c95a4e' : type === 'warning' ? '#f59e0b' : '#1f6575'};color:white;padding:8px 20px;border-radius:40px;font-size:0.8rem;z-index:9999999;`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    // Border generators
+    function generateFlowerBorder(c1, c2) { return `<svg viewBox="0 0 500 700" preserveAspectRatio="none"><defs><circle id="f1" r="4" fill="${c1}" opacity="0.5"/><g id="flower"><use href="#f1"/><use href="#f1" transform="rotate(60)"/><use href="#f1" transform="rotate(120)"/><use href="#f1" transform="rotate(180)"/><use href="#f1" transform="rotate(240)"/><use href="#f1" transform="rotate(300)"/></g></defs><ellipse cx="250" cy="350" rx="210" ry="300" fill="none" stroke="${c1}" stroke-width="2" stroke-dasharray="6 4" opacity="0.4"/><use href="#flower" x="250" y="52" opacity="0.5"/><use href="#flower" x="458" y="350" opacity="0.5"/><use href="#flower" x="250" y="648" opacity="0.5"/><use href="#flower" x="42" y="350" opacity="0.5"/></svg>`; }
+    function generateBubbleBorder(c1, c2) { return `<svg viewBox="0 0 500 700" preserveAspectRatio="none"><defs><circle id="bubble" r="5" fill="none" stroke="${c1}" stroke-width="1.5" opacity="0.5"/></defs><ellipse cx="250" cy="350" rx="210" ry="300" fill="none" stroke="${c1}" stroke-width="2" stroke-dasharray="8 6" opacity="0.35"/><use href="#bubble" x="250" y="52"/><use href="#bubble" x="458" y="350"/><use href="#bubble" x="250" y="648"/><use href="#bubble" x="42" y="350"/></svg>`; }
+    function generateStarBorder(c1, c2) { return `<svg viewBox="0 0 500 700" preserveAspectRatio="none"><defs><polygon id="star" points="0,-4 1.2,-1.2 4,-1.2 2,0.8 2.8,4 0,2 -2.8,4 -2,0.8 -4,-1.2 -1.2,-1.2" fill="${c1}" opacity="0.5"/></defs><ellipse cx="250" cy="350" rx="210" ry="300" fill="none" stroke="${c1}" stroke-width="2" stroke-dasharray="5 5" opacity="0.35"/><use href="#star" x="250" y="50"/><use href="#star" x="460" y="350"/><use href="#star" x="250" y="650"/><use href="#star" x="40" y="350"/></svg>`; }
+    function generateHeartBorder(c1, c2) { return `<svg viewBox="0 0 500 700" preserveAspectRatio="none"><defs><path id="heart" d="M0,1.5 A1.5,1.5 0 0,1 3,1.5 A1.5,1.5 0 0,1 6,1.5 Q6,4.5 3,7.5 Q0,4.5 0,1.5Z" fill="${c1}" opacity="0.5" transform="scale(0.7)"/></defs><ellipse cx="250" cy="350" rx="210" ry="300" fill="none" stroke="${c1}" stroke-width="2" stroke-dasharray="6 4" opacity="0.35"/><use href="#heart" x="250" y="55"/><use href="#heart" x="455" y="350"/><use href="#heart" x="250" y="645"/><use href="#heart" x="45" y="350"/></svg>`; }
+    function generateLeafBorder(c1, c2) { return `<svg viewBox="0 0 500 700" preserveAspectRatio="none"><defs><path id="leaf" d="M0,0 Q4,-6 10,0 Q4,6 0,0Z" fill="${c1}" opacity="0.45"/></defs><ellipse cx="250" cy="350" rx="210" ry="300" fill="none" stroke="${c1}" stroke-width="2" stroke-dasharray="5 5" opacity="0.35"/><use href="#leaf" x="250" y="50"/><use href="#leaf" x="460" y="350"/><use href="#leaf" x="250" y="650"/><use href="#leaf" x="40" y="350"/></svg>`; }
+    function getBorderGenerator(type) {
+      switch(type) {
+        case 'flowers': return generateFlowerBorder('#d4af37', '#90EE90');
+        case 'bubbles': return generateBubbleBorder('#FFD700', '#FFFFFF');
+        case 'stars': return generateStarBorder('#FFD700', '#FFFACD');
+        case 'hearts': return generateHeartBorder('#FF69B4', '#FFB6C1');
+        case 'leaves': return generateLeafBorder('#DAA520', '#90EE90');
+        default: return generateFlowerBorder('#d4af37', '#90EE90');
+      }
+    }
+
+    // ==================== AUTH FUNCTIONS ====================
+    function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+    
+    function handleLogin(event) {
+      event.preventDefault();
+      const t = translations[currentLang];
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      
+      if (!validateEmail(email)) { showMessage('loginMessage', t.invalidEmail, true); return; }
+      
+      const user = users.find(u => u.email === email && u.password === password);
+      if (user) {
+        currentUser = { ...user };
+        if (!currentUser.subscription) currentUser.subscription = { type: 'free', isActive: true };
+        saveCurrentUser();
+        showMessage('loginMessage', 'Login successful!', false);
+        setTimeout(() => { currentPage = 'creator'; renderApp(); }, 500);
+      } else {
+        showMessage('loginMessage', t.loginError, true);
+      }
+    }
+    
+    function handleRegister(event) {
+      event.preventDefault();
+      const t = translations[currentLang];
+      const fullName = document.getElementById('regFullName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const confirmPassword = document.getElementById('regConfirmPassword').value;
+      
+      if (!fullName) { showMessage('registerMessage', 'Please enter your full name', true); return; }
+      if (!validateEmail(email)) { showMessage('registerMessage', t.invalidEmail, true); return; }
+      if (password.length < 6) { showMessage('registerMessage', t.passwordShort, true); return; }
+      if (password !== confirmPassword) { showMessage('registerMessage', t.passwordsMismatch, true); return; }
+      if (users.some(u => u.email === email)) { showMessage('registerMessage', t.emailExists, true); return; }
+      
+      const newUser = { 
+        id: Date.now(), fullName, email, password,
+        subscription: { type: 'free', isActive: true }, cardsCount: 0,
+        createdAt: new Date().toISOString()
+      };
+      users.push(newUser);
+      saveUsers();
+      showMessage('registerMessage', t.registerSuccess, false);
+      setTimeout(() => { showLoginPage(); }, 1500);
+    }
+    
+    function handleLogout() { currentUser = null; saveCurrentUser(); renderApp(); }
+    function showMessage(elementId, message, isError = true) {
+      const el = document.getElementById(elementId);
+      if (el) {
+        el.innerHTML = message;
+        el.className = isError ? 'error-message' : 'success-message';
+        setTimeout(() => { if (el) el.innerHTML = ''; }, 3000);
+      }
+    }
+    
+    function showLoginPage() { currentPage = 'login'; renderApp(); }
+    function showRegisterPage() { currentPage = 'register'; renderApp(); }
+    function switchPage(page) { currentPage = page; renderApp(); }
+    
+    // ==================== CARD CONTENT GENERATION ====================
+    function generateCardContent() {
+      const t = translations[currentLang];
+      const type = document.getElementById('eventType')?.value || 'Wedding';
+      const family = document.getElementById('familyName')?.value || 'Familia';
+      const honor = document.getElementById('honorific')?.value || 'Mr & Mrs';
+      let guest = document.getElementById('guestName')?.value || '';
+      const day = document.getElementById('day')?.value || 'Saturday';
+      const date = document.getElementById('fullDate')?.value || '25 December 2024';
+      const time = document.getElementById('time')?.value || '4:00 PM';
+      const place = document.getElementById('placeName')?.value || 'Gardenia Hall';
+      const pType = document.getElementById('placeType')?.value || 'ukumbini';
+      const city = document.getElementById('city')?.value || 'Dar es Salaam';
+      const blessings = document.getElementById('blessings')?.value || '';
+      const rsvp = document.getElementById('rsvp')?.value || '0712345678';
+      const first = document.getElementById('firstName')?.value || 'Baraka';
+      const second = document.getElementById('secondName')?.value || 'Grace';
+      if (!guest.trim()) guest = '___________';
+      
+      let placePronoun = pType === 'ukumbini' ? `at ${place} Hall` : pType === 'nyumbani' ? `at ${place} Home` : `at ${place} Hotel`;
+      let couple = (type === 'Harusi' && second) ? 
+        `their beloved children <div class="couple-names"><span>${first}</span><div class="amp">&</div><span>${second}</span></div>` : 
+        `their beloved child <div class="couple-names">${first}</div>`;
+      
+      let icons = "🌹 ✿ 🌸 ✿ 🌹";
+      if (currentBorder === 'bubbles') icons = "🫧 ○ 🫧 ○ 🫧";
+      if (currentBorder === 'stars') icons = "⭐ ✧ ⭐ ✧ ⭐";
+      if (currentBorder === 'hearts') icons = "💖 ❤️ 💖 ❤️ 💖";
+      
+      return `<div class="header-decoration">${icons}</div>
+        <div class="invitation-header">INVITATION TO CELEBRATION</div>
+        <div class="family-line">${family} joyfully invite you<br>${honor} ${guest}</div>
+        <div class="event-details">to the celebration ${type} ${couple}</div>
+        <div class="event-details">Taking place on <strong>${day}, ${date}</strong> at <strong>${time}</strong><br>${placePronoun}, ${city}.</div>
+        ${blessings ? `<div class="blessings">✨ Blessings: ${blessings} ✨</div>` : ''}
+        <div class="rsvp-section">📞 To confirm attendance contact:<br><strong>${rsvp}</strong></div>
+        <div class="header-decoration" style="font-size: 14px;">${icons.split(' ').slice(0,3).join(' ')}</div>`;
+    }
+
+    function updateCardPreview() {
+      const contentDiv = document.getElementById('cardContent');
+      if (contentDiv) contentDiv.innerHTML = generateCardContent();
+      const bg = document.getElementById('cardBg');
+      if (customImageData && currentTemplate === 'custom') {
+        bg.style.backgroundImage = `url(${customImageData})`;
+        bg.style.backgroundSize = 'cover';
+        bg.style.background = 'none';
+      } else {
+        bg.style.backgroundImage = 'none';
+        bg.style.background = bgTemplates[currentTemplate] || bgTemplates.emerald;
+      }
+      const borderDiv = document.getElementById('cardBorder');
+      if (borderDiv) borderDiv.innerHTML = getBorderGenerator(currentBorder);
+      const cardContent = document.getElementById('cardContent');
+      if (cardContent) {
+        cardContent.style.fontFamily = currentFont;
+        cardContent.style.color = currentTextColor;
+        cardContent.querySelectorAll('div, span, strong').forEach(el => el.style.color = currentTextColor);
+      }
+    }
+
+    // ==================== RENDER FUNCTIONS ====================
+    function renderHeader() {
+      const t = translations[currentLang];
+      const isPremium = hasPremiumAccess(currentUser);
+      const isTrial = currentUser?.subscription?.type === 'trial' && currentUser?.subscription?.isActive;
+      const remainingDays = getRemainingDays(currentUser);
+      
+      if (!currentUser) {
+        return `
+          <header class="invisys-header">
+            <div class="header-row">
+              <div class="branding-left">
+                <div class="logo-icon"><i class="fas fa-envelope-open-text"></i></div>
+                <div class="logo-text"><span class="logo-main">InviSys</span><span class="logo-sub">${t.brandSub}</span></div>
+              </div>
+              <div class="right-actions">
+                <div class="lang-toggle" id="langToggleBtn">
+                  <i class="fas fa-globe"></i>
+                  <div class="lang-switch-inner">
+                    <span class="lang-option ${currentLang === 'en' ? 'active' : 'inactive'}" data-lang="en">ENG</span>
+                    <span class="lang-divider">|</span>
+                    <span class="lang-option ${currentLang === 'sw' ? 'active' : 'inactive'}" data-lang="sw">SWA</span>
+                    <span class="lang-divider">|</span>
+                    <span class="lang-option ${currentLang === 'fr' ? 'active' : 'inactive'}" data-lang="fr">FR</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </header>
+        `;
+      }
+      
+      return `
+        <header class="invisys-header">
+          <div class="header-row">
+            <div class="branding-left" onclick="switchPage('creator')">
+              <div class="logo-icon"><i class="fas fa-envelope-open-text"></i></div>
+              <div class="logo-text"><span class="logo-main">InviSys</span><span class="logo-sub">${t.brandSub}</span></div>
+            </div>
+            <div class="nav-center">
+              <div class="nav-links">
+                <div class="nav-item ${currentPage === 'creator' ? 'active' : ''}" data-page="creator"><i class="fas fa-home"></i><span>${t.home}</span></div>
+                <div class="nav-item ${currentPage === 'cards' ? 'active' : ''}" data-page="cards"><i class="fas fa-id-card"></i><span>${t.myCards}</span></div>
+              </div>
+            </div>
+            <div class="right-actions">
+              ${isPremium ? `<div class="premium-badge"><i class="fas fa-crown"></i> ${isTrial ? `${t.freeTrial} (${remainingDays} ${t.daysLeft})` : 'PREMIUM'} ${!isTrial && remainingDays > 0 ? `(${remainingDays} ${t.daysLeft})` : ''}</div>` : ''}
+              ${!isPremium ? `<button class="upgrade-header-btn" onclick="showUpgradeModal()"><i class="fas fa-gem"></i> ${t.upgrade}</button>` : ''}
+              <div class="user-profile" id="userProfileTrigger">
+                <div class="avatar-icon"><span>${currentUser.fullName.charAt(0).toUpperCase()}</span></div>
+                <div class="user-info"><span class="user-name">${currentUser.fullName.split(' ')[0]}</span><span class="user-role">${!isPremium ? 'FREE' : 'PREMIUM'}</span></div>
+              </div>
+              <div class="lang-toggle" id="langToggleBtn">
+                <i class="fas fa-globe"></i>
+                <div class="lang-switch-inner">
+                  <span class="lang-option ${currentLang === 'en' ? 'active' : 'inactive'}" data-lang="en">ENG</span>
+                  <span class="lang-divider">|</span>
+                  <span class="lang-option ${currentLang === 'sw' ? 'active' : 'inactive'}" data-lang="sw">SWA</span>
+                  <span class="lang-divider">|</span>
+                  <span class="lang-option ${currentLang === 'fr' ? 'active' : 'inactive'}" data-lang="fr">FR</span>
+                </div>
+              </div>
+              <button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> ${t.logout}</button>
+            </div>
+          </div>
+        </header>
+      `;
+    }
+    
+    function renderLoginPage() {
+      const t = translations[currentLang];
+      return `
+        <div class="auth-container" style="min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+          <div class="auth-card" style="background: rgba(255,255,255,0.96); border-radius: 2rem; padding: 2rem; max-width: 450px; width: 100%;">
+            <div class="auth-header text-center mb-6">
+              <div class="auth-logo" style="background: linear-gradient(135deg, #1e5f6e, #0a3b47); width: 60px; height: 60px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                <i class="fas fa-envelope-open-text" style="font-size: 2rem; color: #ffdf8c;"></i>
+              </div>
+              <div class="auth-title" style="font-size: 1.8rem; font-weight: 800; background: linear-gradient(125deg, #1a5f6e, #0c4e5c); -webkit-background-clip: text; background-clip: text; color: transparent;">InviSys</div>
+              <div class="auth-subtitle" style="color: #5d8b96;">${t.loginSubtitle}</div>
+            </div>
+            <form onsubmit="handleLogin(event)">
+              <div class="input-group mb-4">
+                <label style="display: block; font-size: 0.7rem; font-weight: 600; color: #2c6c7c; margin-bottom: 0.4rem;">${t.email}</label>
+                <input type="email" id="loginEmail" required placeholder="hello@invisys.com" style="width: 100%; padding: 0.8rem 1rem; border: 1.5px solid #e0e8f0; border-radius: 12px;">
+              </div>
+              <div class="input-group mb-4">
+                <label style="display: block; font-size: 0.7rem; font-weight: 600; color: #2c6c7c; margin-bottom: 0.4rem;">${t.password}</label>
+                <input type="password" id="loginPassword" required placeholder="••••••" style="width: 100%; padding: 0.8rem 1rem; border: 1.5px solid #e0e8f0; border-radius: 12px;">
+              </div>
+              <div id="loginMessage" style="margin-bottom: 1rem;"></div>
+              <button type="submit" class="auth-btn" style="width: 100%; background: linear-gradient(105deg, #1c4e5a, #0f3b47); border: none; padding: 0.8rem; border-radius: 40px; color: white; font-weight: 700;">${t.loginBtn}</button>
+            </form>
+            <div class="auth-footer text-center mt-6" style="font-size: 0.8rem; color: #5d8b96;">
+              ${t.noAccount} <a onclick="showRegisterPage()" style="color: #d99938; cursor: pointer;">${t.registerHere}</a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderRegisterPage() {
+      const t = translations[currentLang];
+      return `
+        <div class="auth-container" style="min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+          <div class="auth-card" style="background: rgba(255,255,255,0.96); border-radius: 2rem; padding: 2rem; max-width: 450px; width: 100%;">
+            <div class="auth-header text-center mb-6">
+              <div class="auth-logo" style="background: linear-gradient(135deg, #1e5f6e, #0a3b47); width: 60px; height: 60px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                <i class="fas fa-envelope-open-text" style="font-size: 2rem; color: #ffdf8c;"></i>
+              </div>
+              <div class="auth-title" style="font-size: 1.8rem; font-weight: 800; background: linear-gradient(125deg, #1a5f6e, #0c4e5c); -webkit-background-clip: text; background-clip: text; color: transparent;">InviSys</div>
+              <div class="auth-subtitle" style="color: #5d8b96;">${t.registerSubtitle}</div>
+            </div>
+            <form onsubmit="handleRegister(event)">
+              <div class="input-group mb-4">
+                <label style="display: block; font-size: 0.7rem; font-weight: 600; color: #2c6c7c; margin-bottom: 0.4rem;">${t.fullName}</label>
+                <input type="text" id="regFullName" required placeholder="John Doe" style="width: 100%; padding: 0.8rem 1rem; border: 1.5px solid #e0e8f0; border-radius: 12px;">
+              </div>
+              <div class="input-group mb-4">
+                <label style="display: block; font-size: 0.7rem; font-weight: 600; color: #2c6c7c; margin-bottom: 0.4rem;">${t.email}</label>
+                <input type="email" id="regEmail" required placeholder="hello@invisys.com" style="width: 100%; padding: 0.8rem 1rem; border: 1.5px solid #e0e8f0; border-radius: 12px;">
+              </div>
+              <div class="input-group mb-4">
+                <label style="display: block; font-size: 0.7rem; font-weight: 600; color: #2c6c7c; margin-bottom: 0.4rem;">${t.password}</label>
+                <input type="password" id="regPassword" required placeholder="••••••" style="width: 100%; padding: 0.8rem 1rem; border: 1.5px solid #e0e8f0; border-radius: 12px;">
+              </div>
+              <div class="input-group mb-4">
+                <label style="display: block; font-size: 0.7rem; font-weight: 600; color: #2c6c7c; margin-bottom: 0.4rem;">${t.confirmPassword}</label>
+                <input type="password" id="regConfirmPassword" required placeholder="••••••" style="width: 100%; padding: 0.8rem 1rem; border: 1.5px solid #e0e8f0; border-radius: 12px;">
+              </div>
+              <div id="registerMessage" style="margin-bottom: 1rem;"></div>
+              <button type="submit" class="auth-btn" style="width: 100%; background: linear-gradient(105deg, #1c4e5a, #0f3b47); border: none; padding: 0.8rem; border-radius: 40px; color: white; font-weight: 700;">${t.registerBtn}</button>
+            </form>
+            <div class="auth-footer text-center mt-6" style="font-size: 0.8rem; color: #5d8b96;">
+              ${t.haveAccount} <a onclick="showLoginPage()" style="color: #d99938; cursor: pointer;">${t.loginHere}</a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderCreatorPage() {
+      const t = translations[currentLang];
+      const isPremium = hasPremiumAccess(currentUser);
+      const savedCards = JSON.parse(localStorage.getItem('invitationCards') || '[]');
+      const userCards = savedCards.filter(c => c.userId === currentUser.id);
+      const hasReachedLimit = !isPremium && userCards.length >= 5;
+      
+      return `
+        <div class="two-cards-row">
+          <div class="card">
+            <div class="card-icon"><i class="fas fa-pen-alt"></i></div>
+            <div class="card-title">✨ ${t.formTitle}</div>
+            <form id="invitationForm">
+              <div class="form-group"><label>🎊 ${t.eventType}</label>
+                <select id="eventType">
+                  <option value="Wedding">💍 ${t.optWedding}</option>
+                  <option value="Send-off">✈️ ${t.optSendoff}</option>
+                  <option value="Birthday">🎂 ${t.optBirthday}</option>
+                  <option value="Kitchen Party">🍳 ${t.optKitchen}</option>
+                  <option value="Tahiri">🕌 ${t.optTahiri}</option>
+                  <option value="Majilio">⛪ ${t.optMajilio}</option>
+                </select>
+              </div>
+              <div class="form-group"><label>👨‍👩‍👧 ${t.familyName}</label><input type="text" id="familyName" value="Familia ya Mr & Mrs Steven Mushi"></div>
+              <div class="form-group"><label>👔 ${t.honorific}</label>
+                <select id="honorific"><option>Mr & Mrs</option><option>Mr</option><option>Mrs</option><option>Miss</option><option>Dr</option><option>Prof</option></select>
+              </div>
+              <div class="form-group"><label>📝 ${t.guestName}</label><input type="text" id="guestName" placeholder="${t.guestName}"></div>
+              <div id="dynamicNamesContainer"></div>
+              <div class="form-row">
+                <div class="form-group"><label>📅 ${t.day}</label><input type="text" id="day" value="Jumamosi"></div>
+                <div class="form-group"><label>🗓️ ${t.fullDate}</label><input type="text" id="fullDate" value="25 Desemba 2024"></div>
+                <div class="form-group"><label>⏰ ${t.time}</label><input type="text" id="time" value="Saa 4:00 Alasiri"></div>
+              </div>
+              <div class="form-group"><label>📍 ${t.placeName}</label><input type="text" id="placeName" value="Ukumbi wa Gardenia"></div>
+              <div class="form-row">
+                <div class="form-group"><label>🏢 ${t.placeType}</label>
+                  <select id="placeType"><option value="ukumbini">🏛️ ${t.placeType === "Venue Type" ? "At Hall" : t.placeType === "Aina ya Eneo" ? "Ukumbini" : "À la salle"}</option>
+                  <option value="nyumbani">🏠 ${t.placeType === "Venue Type" ? "At Home" : t.placeType === "Aina ya Eneo" ? "Nyumbani" : "À la maison"}</option>
+                  <option value="hotelini">🏨 ${t.placeType === "Venue Type" ? "At Hotel" : t.placeType === "Aina ya Eneo" ? "Hotelini" : "À l'hôtel"}</option></select>
+                </div>
+                <div class="form-group"><label>🌆 ${t.city}</label><input type="text" id="city" value="Dar es Salaam"></div>
+              </div>
+              <div class="form-group ${!isPremium ? 'premium-lock-overlay' : ''}"><label>🙏 ${t.blessings}</label><textarea id="blessings" rows="2">May God bless you abundantly</textarea></div>
+              <div class="form-group"><label>📞 ${t.rsvp}</label><input type="text" id="rsvp" value="0712345678"></div>
+            </form>
+          </div>
+          
+          <div class="card">
+            <div class="card-icon"><i class="fas fa-palette"></i></div>
+            <div class="card-title">🎨 ${t.designTitle}</div>
+            
+            <!-- Accordion 1: Background Colors -->
+            <div class="accordion-section">
+              <div class="accordion-header" id="accordion1Header">
+                <h3><i class="fas fa-image"></i> ${t.accordion1}</h3>
+                <i class="fas fa-chevron-down accordion-chevron" id="chevron1"></i>
+              </div>
+              <div class="accordion-content" id="accordion1Content">
+                <div class="accordion-inner">
+                  <div class="template-options">
+                    <div class="template-item ${currentTemplate === 'emerald' ? 'selected' : ''}" data-template="emerald"><div class="color-preview" style="background: linear-gradient(135deg, #043927, #0a5c3e);"></div>💚 ${t.templateEmerald}</div>
+                    <div class="template-item ${currentTemplate === 'golden' ? 'selected' : ''}" data-template="golden"><div class="color-preview" style="background: linear-gradient(135deg, #8B7355, #DAA520);"></div>💛 ${t.templateGolden}</div>
+                    <div class="template-item ${currentTemplate === 'rose' ? 'selected' : ''}" data-template="rose"><div class="color-preview" style="background: linear-gradient(135deg, #ff758c, #ff7eb3);"></div>💗 ${t.templateRose}</div>
+                    <div class="template-item ${currentTemplate === 'ocean' ? 'selected' : ''}" data-template="ocean"><div class="color-preview" style="background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);"></div>💙 ${t.templateOcean}</div>
+                    <div class="template-item ${currentTemplate === 'lavender' ? 'selected' : ''}" data-template="lavender"><div class="color-preview" style="background: linear-gradient(135deg, #6a3093, #a044ff);"></div>💜 ${t.templateLavender}</div>
+                    <div class="template-item ${currentTemplate === 'sunset' ? 'selected' : ''}" data-template="sunset"><div class="color-preview" style="background: linear-gradient(135deg, #f7971e, #ffd200);"></div>🧡 ${t.templateSunset}</div>
+                    <div class="template-item ${currentTemplate === 'custom' ? 'selected' : ''} ${!isPremium ? 'premium-lock-overlay' : ''}" data-template="custom"><div class="color-preview custom-bg-preview"></div>🖼️ ${t.templateCustom}</div>
+                  </div>
+                  <div id="customBgUpload" class="custom-bg-section" style="display: ${currentTemplate === 'custom' && isPremium ? 'block' : 'none'}">
+                    <div class="file-upload border-2 border-dashed border-purple-500 bg-white p-3 text-center rounded-lg cursor-pointer" onclick="document.getElementById('customImage').click()">
+                      <input type="file" id="customImage" accept="image/*" style="display:none">
+                      <label>📸 Click to upload image</label>
+                    </div>
+                    <div id="customImagePreview" class="mt-2 text-center"></div>
+                    <button type="button" id="removeCustomBtn" class="bg-red-500 text-white px-3 py-1 rounded text-sm mt-2 hidden">🗑️ Remove</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Accordion 2: Border Styles -->
+            <div class="accordion-section">
+              <div class="accordion-header" id="accordion2Header">
+                <h3><i class="fas fa-border-all"></i> ${t.accordion2}</h3>
+                <i class="fas fa-chevron-down accordion-chevron" id="chevron2"></i>
+              </div>
+              <div class="accordion-content" id="accordion2Content">
+                <div class="accordion-inner">
+                  <div class="border-options">
+                    <div class="border-shape ${currentBorder === 'flowers' ? 'selected' : ''}" data-border="flowers"><i class="fas fa-fan"></i>🌸 ${t.borderFlowers}</div>
+                    <div class="border-shape ${currentBorder === 'bubbles' ? 'selected' : ''}" data-border="bubbles"><i class="fas fa-circle"></i>🫧 ${t.borderBubbles}</div>
+                    <div class="border-shape ${currentBorder === 'stars' ? 'selected' : ''}" data-border="stars"><i class="fas fa-star"></i>⭐ ${t.borderStars}</div>
+                    <div class="border-shape ${currentBorder === 'hearts' ? 'selected' : ''}" data-border="hearts"><i class="fas fa-heart"></i>💖 ${t.borderHearts}</div>
+                    <div class="border-shape ${currentBorder === 'leaves' ? 'selected' : ''}" data-border="leaves"><i class="fas fa-leaf"></i>🍃 ${t.borderLeaves}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Accordion 3: Text Styles -->
+            <div class="accordion-section">
+              <div class="accordion-header" id="accordion3Header">
+                <h3><i class="fas fa-font"></i> ${t.accordion3}</h3>
+                <i class="fas fa-chevron-down accordion-chevron" id="chevron3"></i>
+              </div>
+              <div class="accordion-content" id="accordion3Content">
+                <div class="accordion-inner">
+                  <div class="text-style-group">
+                    <label><i class="fas fa-text-height"></i> ${t.fontFamily}</label>
+                    <div id="fontOptions" style="display: flex; flex-wrap: wrap;">
+                      <div class="font-option ${currentFont === "'Playfair Display', serif" ? 'selected' : ''}" data-font="'Playfair Display', serif"><i class="fas fa-font"></i> 📜 ${t.fontClassic}</div>
+                      <div class="font-option ${currentFont === "'Great Vibes', cursive" ? 'selected' : ''}" data-font="'Great Vibes', cursive"><i class="fas fa-feather-alt"></i> ✨ ${t.fontElegant}</div>
+                      <div class="font-option ${currentFont === "'Montserrat', sans-serif" ? 'selected' : ''}" data-font="'Montserrat', sans-serif"><i class="fas fa-text-height"></i> 📱 ${t.fontModern}</div>
+                      <div class="font-option ${currentFont === "'Dancing Script', cursive" ? 'selected' : ''}" data-font="'Dancing Script', cursive"><i class="fas fa-pen-fancy"></i> ✍️ ${t.fontScript}</div>
+                      <div class="font-option ${currentFont === "'Poppins', sans-serif" ? 'selected' : ''}" data-font="'Poppins', sans-serif"><i class="fas fa-paragraph"></i> 🎯 ${t.fontClean}</div>
+                    </div>
+                  </div>
+                  <div class="text-style-group">
+                    <label><i class="fas fa-palette"></i> ${t.textColor}</label>
+                    <div id="colorOptions" style="display: flex; flex-wrap: wrap;">
+                      <div class="color-option ${currentTextColor === '#FFFFFF' ? 'selected' : ''}" data-color="#FFFFFF"><div style="width:20px;height:20px;background:#FFFFFF;border-radius:50%;border:1px solid #ccc;"></div> ⚪ ${t.colorWhite}</div>
+                      <div class="color-option ${currentTextColor === '#FFD700' ? 'selected' : ''}" data-color="#FFD700"><div style="width:20px;height:20px;background:#FFD700;border-radius:50%;"></div> 🟡 ${t.colorGold}</div>
+                      <div class="color-option ${currentTextColor === '#FFB6C1' ? 'selected' : ''}" data-color="#FFB6C1"><div style="width:20px;height:20px;background:#FFB6C1;border-radius:50%;"></div> 🩷 ${t.colorPink}</div>
+                      <div class="color-option ${currentTextColor === '#FF6347' ? 'selected' : ''}" data-color="#FF6347"><div style="width:20px;height:20px;background:#FF6347;border-radius:50%;"></div> 🧡 ${t.colorCoral}</div>
+                      <div class="color-option ${currentTextColor === '#87CEEB' ? 'selected' : ''}" data-color="#87CEEB"><div style="width:20px;height:20px;background:#87CEEB;border-radius:50%;"></div> 💙 ${t.colorSky}</div>
+                      <div class="color-option ${currentTextColor === '#98FB98' ? 'selected' : ''}" data-color="#98FB98"><div style="width:20px;height:20px;background:#98FB98;border-radius:50%;"></div> 💚 ${t.colorMint}</div>
+                      <div class="color-option ${currentTextColor === '#DDA0DD' ? 'selected' : ''}" data-color="#DDA0DD"><div style="width:20px;height:20px;background:#DDA0DD;border-radius:50%;"></div> 💜 ${t.colorPlum}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="invitation-preview">
+              <div class="preview-label"><i class="fas fa-eye"></i> ${t.previewLabel}</div>
+              <div id="invitationCard" class="invitation-card">
+                <div class="card-bg" id="cardBg"></div>
+                <div class="bg-overlay" id="bgOverlay"></div>
+                <div id="cardBorder" class="card-border"></div>
+                <div class="content-backdrop" id="contentBackdrop"></div>
+                <div class="card-content" id="cardContent"></div>
+                <div id="centerWatermark" class="center-watermark ${isPremium ? 'hidden' : ''}">🔷 InviSys 🔷</div>
+              </div>
+            </div>
+            
+            ${hasReachedLimit ? 
+              `<button class="save-card-btn disabled" disabled onclick="showUpgradeModal()"><i class="fas fa-lock"></i> ${t.upgradeToUnlock}</button>` :
+              `<button class="save-card-btn" onclick="saveDemoCard()"><i class="fas fa-save"></i> ${t.saveCard}</button>`
+            }
+            ${!isPremium && !hasReachedLimit ? `<p class="text-xs text-center text-gray-500 mt-2">📊 ${t.freePlan}: ${userCards.length}/5 ${t.myCards.toLowerCase()}. <a onclick="showUpgradeModal()" style="color: #d99938; cursor: pointer;">${t.upgrade}</a> ${t.featuresUnlimited.toLowerCase()}</p>` : ''}
+            ${!isPremium && hasReachedLimit ? `<p class="text-xs text-center text-red-500 mt-2">⚠️ ${t.limitReached}</p>` : ''}
+          </div>
+        </div>
+        
+        <div id="upgradeModal" class="modal">
+          <div class="modal-content" id="upgradeModalContent"></div>
+        </div>
+      `;
+    }
+    
+    function renderCardsPage() {
+      const t = translations[currentLang];
+      const savedCards = JSON.parse(localStorage.getItem('invitationCards') || '[]');
+      const userCards = savedCards.filter(c => c.userId === currentUser?.id);
+      
+      if (userCards.length === 0) {
+        return `<div class="empty-gallery text-center p-8 bg-white/90 rounded-2xl">📭 ${t.noCards || 'No saved cards yet. Create your first invitation!'}</div>`;
+      }
+      
+      let html = '<div class="cards-gallery">';
+      userCards.forEach(card => {
+        html += `
+          <div class="saved-card">
+            <div class="text-sm font-semibold text-gray-700">${card.eventType || 'Event'}</div>
+            <div class="text-xs text-gray-500 mt-1">Created: ${new Date(card.createdAt).toLocaleDateString()}</div>
+            <div class="flex gap-2 mt-3">
+              <button class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs" onclick="editCard(${card.id})"><i class="fas fa-edit"></i> ${t.edit || 'Edit'}</button>
+              <button class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs" onclick="deleteCard(${card.id})"><i class="fas fa-trash"></i> ${t.delete || 'Delete'}</button>
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      return html;
+    }
+    
+    function renderUpgradeModal() {
+      const t = translations[currentLang];
+      return `
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-[#1f6575]"><i class="fas fa-crown text-amber-500"></i> ${t.upgrade} to Premium</h2>
+          <button onclick="closeUpgradeModal()" class="text-gray-500 hover:text-gray-700"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-4 mb-6">
+          <div class="pricing-card">
+            <div class="text-center">
+              <i class="fas fa-user text-3xl text-gray-400 mb-2"></i>
+              <h3 class="font-bold text-lg">${t.freePlan}</h3>
+              <div class="price">TSh 0</div>
+              <ul class="feature-list mt-3">
+                <li><i class="fas fa-check text-green-500"></i> 5 cards</li>
+                <li><i class="fas fa-check text-green-500"></i> Basic templates</li>
+                <li><i class="fas fa-times text-red-500"></i> Custom background</li>
+                <li><i class="fas fa-times text-red-500"></i> Remove watermark</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="pricing-card recommended" id="monthlyPlan" onclick="selectPackage('monthly')">
+            <div class="recommended-badge">RECOMMENDED</div>
+            <div class="text-center">
+              <i class="fas fa-calendar-alt text-2xl text-amber-500 mb-2"></i>
+              <h3 class="font-bold text-lg">${t.monthlyPlan}</h3>
+              <div class="price" id="monthlyPrice">TSh 10,000</div>
+              <div class="text-xs text-gray-500">${t.perMonth}</div>
+              <ul class="feature-list mt-3">
+                <li><i class="fas fa-check text-green-500"></i> ${t.featuresUnlimited}</li>
+                <li><i class="fas fa-check text-green-500"></i> ${t.featuresAllTemplates}</li>
+                <li><i class="fas fa-check text-green-500"></i> ${t.featuresCustomBg}</li>
+                <li><i class="fas fa-check text-green-500"></i> ${t.featuresRemoveWatermark}</li>
+                <li><i class="fas fa-star text-amber-500"></i> ${t.featuresCancel}</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="pricing-card" id="lifetimePlan" onclick="selectPackage('lifetime')">
+            <div class="text-center">
+              <i class="fas fa-infinity text-2xl text-amber-500 mb-2"></i>
+              <h3 class="font-bold text-lg">${t.lifetimePlan}</h3>
+              <div class="price" id="lifetimePrice">TSh 150,000</div>
+              <div class="text-xs text-gray-500">${t.oneTime}</div>
+              <ul class="feature-list mt-3">
+                <li><i class="fas fa-check text-green-500"></i> ${t.featuresUnlimited}</li>
+                <li><i class="fas fa-check text-green-500"></i> ${t.featuresAllTemplates}</li>
+                <li><i class="fas fa-check text-green-500"></i> ${t.featuresCustomBg}</li>
+                <li><i class="fas fa-check text-green-500"></i> ${t.featuresRemoveWatermark}</li>
+                <li><i class="fas fa-star text-amber-500"></i> ${t.featuresNeverExpires}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-amber-50 p-4 rounded-xl mb-4">
+          <div class="flex gap-2">
+            <input type="text" id="promoCodeInput" class="promo-input flex-1" placeholder="${t.promoPlaceholder}">
+            <button class="apply-btn" onclick="applyPromoCode()">${t.apply}</button>
+          </div>
+          <div id="promoMessage" class="text-xs mt-2"></div>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-semibold mb-2">${t.paymentMethod}</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button class="payment-method-btn p-2 border rounded-lg text-center" data-method="m-pesa" onclick="selectPaymentMethod('m-pesa')">
+              <i class="fas fa-mobile-alt text-green-600"></i>
+              <div class="text-xs">M-PESA</div>
+            </button>
+            <button class="payment-method-btn p-2 border rounded-lg text-center" data-method="bank" onclick="selectPaymentMethod('bank')">
+              <i class="fas fa-university text-blue-600"></i>
+              <div class="text-xs">Bank</div>
+            </button>
+            <button class="payment-method-btn p-2 border rounded-lg text-center" data-method="card" onclick="selectPaymentMethod('card')">
+              <i class="fas fa-credit-card text-purple-600"></i>
+              <div class="text-xs">Card</div>
+            </button>
+          </div>
+        </div>
+        
+        <div class="bg-gray-100 p-3 rounded-lg mb-4">
+          <div class="flex justify-between text-sm">
+            <span>${t.subtotal}:</span>
+            <span id="summarySubtotal">TSh 10,000</span>
+          </div>
+          <div class="flex justify-between text-sm text-green-600" id="summaryDiscountRow" style="display: none;">
+            <span>${t.discount}:</span>
+            <span id="summaryDiscount">-TSh 0</span>
+          </div>
+          <div class="flex justify-between font-bold mt-2 pt-2 border-t">
+            <span>${t.total}:</span>
+            <span id="summaryTotal">TSh 10,000</span>
+          </div>
+        </div>
+        
+        <div id="paymentStatus" class="text-center mb-3"></div>
+        
+        <button class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-white py-3 rounded-xl font-bold" onclick="processUpgrade()" id="upgradeConfirmBtn">
+          <i class="fas fa-lock"></i> ${t.upgradeNow}
+        </button>
+        
+        <p class="text-center text-xs text-gray-500 mt-4">
+          <i class="fas fa-shield-alt"></i> ${t.securePayment}
+        </p>
+      `;
+    }
+    
+    // ==================== UPGRADE LOGIC ====================
+    let selectedPackage = 'monthly';
+    let selectedPaymentMethod = 'm-pesa';
+    let activePromo = null;
+    let promoDiscount = 0;
+    
+    function selectPackage(pkg) {
+      selectedPackage = pkg;
+      document.querySelectorAll('.pricing-card').forEach(card => card.classList.remove('selected'));
+      document.getElementById(pkg === 'monthly' ? 'monthlyPlan' : 'lifetimePlan').classList.add('selected');
+      updatePriceSummary();
+    }
+    
+    function selectPaymentMethod(method) {
+      selectedPaymentMethod = method;
+      document.querySelectorAll('.payment-method-btn').forEach(btn => {
+        btn.style.borderColor = '#e0e8f0';
+        btn.style.background = 'white';
+      });
+      const activeBtn = document.querySelector(`.payment-method-btn[data-method="${method}"]`);
+      if (activeBtn) {
+        activeBtn.style.borderColor = '#d99938';
+        activeBtn.style.background = '#fff8e8';
+      }
+    }
+    
+    function applyPromoCode() {
+      const t = translations[currentLang];
+      const code = document.getElementById('promoCodeInput').value.trim();
+      const promoResult = validatePromoCode(code, selectedPackage);
+      
+      if (promoResult.valid) {
+        if (promoResult.isTrial) {
+          activePromo = { code, discount: 100, isTrial: true, trialDays: promoResult.trialDays };
+          promoDiscount = 100;
+          document.getElementById('promoMessage').innerHTML = `<span class="text-green-600">✓ ${code} gives you a ${promoResult.trialDays}-day FREE trial!</span>`;
+        } else {
+          activePromo = { code, discount: promoResult.discount };
+          promoDiscount = promoResult.discount;
+          document.getElementById('promoMessage').innerHTML = `<span class="text-green-600">✓ ${code} gives ${promoResult.discount}% off!</span>`;
+        }
+      } else {
+        activePromo = null;
+        promoDiscount = 0;
+        document.getElementById('promoMessage').innerHTML = `<span class="text-red-600">✗ ${promoResult.message}</span>`;
+      }
+      updatePriceSummary();
+    }
+    
+    function updatePriceSummary() {
+      const t = translations[currentLang];
+      const basePrice = selectedPackage === 'monthly' ? 10000 : 150000;
+      const discountedPrice = basePrice - (basePrice * promoDiscount / 100);
+      const finalPrice = discountedPrice < 0 ? 0 : discountedPrice;
+      
+      document.getElementById('summarySubtotal').innerText = `TSh ${basePrice.toLocaleString()}`;
+      if (promoDiscount > 0) {
+        document.getElementById('summaryDiscountRow').style.display = 'flex';
+        document.getElementById('summaryDiscount').innerText = `-TSh ${(basePrice * promoDiscount / 100).toLocaleString()}`;
+      } else {
+        document.getElementById('summaryDiscountRow').style.display = 'none';
+      }
+      document.getElementById('summaryTotal').innerText = `TSh ${finalPrice.toLocaleString()}`;
+      document.getElementById('monthlyPrice').innerText = selectedPackage === 'monthly' ? `TSh ${finalPrice.toLocaleString()}` : 'TSh 10,000';
+      document.getElementById('lifetimePrice').innerText = selectedPackage === 'lifetime' ? `TSh ${finalPrice.toLocaleString()}` : 'TSh 150,000';
+    }
+    
+    async function processUpgrade() {
+      const t = translations[currentLang];
+      const statusDiv = document.getElementById('paymentStatus');
+      const confirmBtn = document.getElementById('upgradeConfirmBtn');
+      
+      statusDiv.innerHTML = '<div class="text-blue-600"><i class="fas fa-spinner fa-spin"></i> Processing payment...</div>';
+      confirmBtn.disabled = true;
+      confirmBtn.style.opacity = '0.5';
+      
+      const result = await processPayment(selectedPackage, selectedPaymentMethod, activePromo?.code);
+      
+      if (result.success) {
+        statusDiv.innerHTML = `<div class="text-green-600"><i class="fas fa-check-circle"></i> Payment successful! ${result.isTrial ? 'Your free trial has been activated!' : 'Welcome to Premium!'}</div>`;
+        setTimeout(() => {
+          closeUpgradeModal();
+          renderApp();
+          showToast(result.isTrial ? '🎉 Free trial activated! Enjoy premium features for 1 day!' : '🎉 Welcome to Premium! Enjoy unlimited features!', 'success');
+        }, 2000);
+      } else {
+        statusDiv.innerHTML = '<div class="text-red-600"><i class="fas fa-times-circle"></i> Payment failed. Please try again.</div>';
+        confirmBtn.disabled = false;
+        confirmBtn.style.opacity = '1';
+      }
+    }
+    
+    function showUpgradeModal() {
+      document.getElementById('upgradeModal').classList.add('active');
+      const modalContent = document.getElementById('upgradeModalContent');
+      if (modalContent) {
+        modalContent.innerHTML = renderUpgradeModal();
+        selectPackage(selectedPackage);
+        selectPaymentMethod(selectedPaymentMethod);
+        if (activePromo) {
+          document.getElementById('promoCodeInput').value = activePromo.code;
+          updatePriceSummary();
+        }
+      }
+    }
+    
+    function closeUpgradeModal() {
+      document.getElementById('upgradeModal').classList.remove('active');
+    }
+    
+    function saveDemoCard() {
+      const t = translations[currentLang];
+      if (!currentUser) return;
+      
+      const savedCards = JSON.parse(localStorage.getItem('invitationCards') || '[]');
+      const userCards = savedCards.filter(c => c.userId === currentUser.id);
+      const isPremium = hasPremiumAccess(currentUser);
+      
+      if (!isPremium && userCards.length >= 5) {
+        showToast(t.limitReached, 'warning');
+        showUpgradeModal();
+        return;
+      }
+      
+      const eventType = document.getElementById('eventType')?.value || 'Event';
+      const newCard = {
+        id: Date.now(),
+        userId: currentUser.id,
+        eventType: eventType,
+        createdAt: new Date().toISOString()
+      };
+      savedCards.unshift(newCard);
+      localStorage.setItem('invitationCards', JSON.stringify(savedCards));
+      
+      if (currentUser) {
+        currentUser.cardsCount = (currentUser.cardsCount || 0) + 1;
+        saveCurrentUser();
+      }
+      showToast(t.cardSaved, 'success');
+      renderApp();
+    }
+    
+    function editCard(id) { showToast('Edit feature coming soon!', 'info'); }
+    function deleteCard(id) {
+      let savedCards = JSON.parse(localStorage.getItem('invitationCards') || '[]');
+      savedCards = savedCards.filter(c => c.id !== id);
+      localStorage.setItem('invitationCards', JSON.stringify(savedCards));
+      renderApp();
+      showToast('Card deleted', 'info');
+    }
+    
+    // ==================== SETUP FUNCTIONS ====================
+    function setupNameFields() {
+      const container = document.getElementById('dynamicNamesContainer');
+      if (container) {
+        container.innerHTML = `<div class="form-group"><label>👨 ${translations[currentLang].firstName}</label><input type="text" id="firstName" value="Baraka John" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm"></div>`;
+      }
+    }
+    
+    function setupTemplateSelection() {
+      document.querySelectorAll('.template-item').forEach(item => {
+        item.addEventListener('click', () => {
+          if (item.classList.contains('premium-lock-overlay')) {
+            showUpgradeModal();
+            return;
+          }
+          document.querySelectorAll('.template-item').forEach(i => i.classList.remove('selected'));
+          item.classList.add('selected');
+          currentTemplate = item.getAttribute('data-template');
+          const customSection = document.getElementById('customBgUpload');
+          if (customSection) customSection.style.display = currentTemplate === 'custom' ? 'block' : 'none';
+          updateCardPreview();
+        });
+      });
+      
+      document.querySelectorAll('.border-shape').forEach(shape => {
+        shape.addEventListener('click', () => {
+          document.querySelectorAll('.border-shape').forEach(s => s.classList.remove('selected'));
+          shape.classList.add('selected');
+          currentBorder = shape.getAttribute('data-border');
+          updateCardPreview();
+        });
+      });
+      
+      document.querySelectorAll('.font-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          document.querySelectorAll('.font-option').forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          currentFont = opt.getAttribute('data-font');
+          updateCardPreview();
+        });
+      });
+      
+      document.querySelectorAll('.color-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          currentTextColor = opt.getAttribute('data-color');
+          updateCardPreview();
+        });
+      });
+    }
+    
+    function handleCustomImageUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          customImageData = ev.target.result;
+          const previewDiv = document.getElementById('customImagePreview');
+          if (previewDiv) previewDiv.innerHTML = `<img src="${customImageData}" style="max-width: 80px; border-radius: 5px;">`;
+          const removeBtn = document.getElementById('removeCustomBtn');
+          if (removeBtn) removeBtn.classList.remove('hidden');
+          updateCardPreview();
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    
+    function removeCustomImage() {
+      customImageData = null;
+      const previewDiv = document.getElementById('customImagePreview');
+      if (previewDiv) previewDiv.innerHTML = '';
+      const removeBtn = document.getElementById('removeCustomBtn');
+      if (removeBtn) removeBtn.classList.add('hidden');
+      const fileInput = document.getElementById('customImage');
+      if (fileInput) fileInput.value = '';
+      updateCardPreview();
+    }
+    
+    function setupAccordion(headerId, contentId, chevronId) {
+      const h = document.getElementById(headerId), c = document.getElementById(contentId), ch = document.getElementById(chevronId);
+      if(h && c) h.addEventListener('click', () => { c.classList.toggle('open'); if(ch) ch.classList.toggle('rotated'); });
+    }
+    
+    // ==================== RENDER APP ====================
+    function renderApp() {
+      const container = document.getElementById('appContainer');
+      if (!container) return;
+      
+      checkAndUpdateSubscription();
+      
+      let content = renderHeader();
+      
+      if (!currentUser) {
+        if (currentPage === 'register') {
+          content += renderRegisterPage();
+        } else {
+          content += renderLoginPage();
+        }
+      } else {
+        if (currentPage === 'creator') {
+          content += renderCreatorPage();
+        } else if (currentPage === 'cards') {
+          content += renderCardsPage();
+        } else {
+          content += renderCreatorPage();
+        }
+      }
+      
+      container.innerHTML = content;
+      
+      // Re-attach event listeners
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const page = item.getAttribute('data-page');
+          if (page) switchPage(page);
+        });
+      });
+      
+      document.querySelectorAll('.lang-option').forEach(opt => {
+        opt.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const newLang = opt.getAttribute('data-lang');
+          if (newLang) {
+            currentLang = newLang;
+            renderApp();
+          }
+        });
+      });
+      
+      // Setup accordions
+      setupAccordion('accordion1Header', 'accordion1Content', 'chevron1');
+      setupAccordion('accordion2Header', 'accordion2Content', 'chevron2');
+      setupAccordion('accordion3Header', 'accordion3Content', 'chevron3');
+      
+      // Setup template selection after DOM is ready
+      setupTemplateSelection();
+      setupNameFields();
+      
+      // Form input listeners
+      ['eventType','familyName','honorific','guestName','day','fullDate','time','placeName','placeType','city','blessings','rsvp'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.addEventListener('input', updateCardPreview);
+      });
+      
+      // Custom image upload
+      const customImage = document.getElementById('customImage');
+      if(customImage) customImage.addEventListener('change', handleCustomImageUpload);
+      const removeCustomBtn = document.getElementById('removeCustomBtn');
+      if(removeCustomBtn) removeCustomBtn.addEventListener('click', removeCustomImage);
+      
+      updateCardPreview();
+    }
+    
+    // Expose global functions
+    window.handleLogin = handleLogin;
+    window.handleRegister = handleRegister;
+    window.handleLogout = handleLogout;
+    window.showLoginPage = showLoginPage;
+    window.showRegisterPage = showRegisterPage;
+    window.switchPage = switchPage;
+    window.showUpgradeModal = showUpgradeModal;
+    window.closeUpgradeModal = closeUpgradeModal;
+    window.selectPackage = selectPackage;
+    window.selectPaymentMethod = selectPaymentMethod;
+    window.applyPromoCode = applyPromoCode;
+    window.processUpgrade = processUpgrade;
+    window.saveDemoCard = saveDemoCard;
+    window.editCard = editCard;
+    window.deleteCard = deleteCard;
+    
+    // Initialize demo user if none exists
+    if (users.length === 0) {
+      users.push({
+        id: 1,
+        fullName: 'Demo User',
+        email: 'demo@invisys.com',
+        password: 'demo123',
+        subscription: { type: 'free', isActive: true },
+        cardsCount: 0,
+        createdAt: new Date().toISOString()
+      });
+      saveUsers();
+    }
+    
+    // Start app
+    renderApp();
+  </script>
+</body>
+</html>
