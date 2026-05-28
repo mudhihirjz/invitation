@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>InviSys Pro | Professional Invitation Designer</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Great+Vibes&family=Playfair+Display:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(145deg, #0a2a30 0%, #051217 100%);
+      position: relative;
+      overflow-x: hidden;
+    }
+    #particleCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .content-overlay { position: relative; z-index: 10; max-width: 1500px; margin: 0 auto; padding: 1.2rem; }
+    
+    /* Glassmorphism Components */
+    .glass-header {
+      background: rgba(10, 25, 30, 0.85);
+      backdrop-filter: blur(16px);
+      border-radius: 2rem;
+      border: 1px solid rgba(217, 153, 56, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.97);
+      backdrop-filter: blur(4px);
+      border-radius: 1.5rem;
+      border: 1px solid rgba(217, 153, 56, 0.2);
+      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+    .glass-card:hover { transform: translateY(-3px); border-color: rgba(217, 153, 56, 0.4); }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #d99938, #b87a28);
+      transition: all 0.2s ease;
+    }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(217, 153, 56, 0.3); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { background: linear-gradient(135deg, #1a5f6e, #0c4e5c); }
+    
+    /* Invitation Card - Fixed height without scrollbar */
+    .invitation-card {
+      width: 100%;
+      max-width: 380px;
+      height: 506px; /* Fixed height instead of aspect-ratio */
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.35);
+      margin: 0 auto;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .invitation-card:hover { transform: scale(1.02); }
+    .card-bg-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .card-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      background: rgba(0, 0, 0, 0.35);
+    }
+    .card-border-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .card-border-layer svg { width: 100%; height: 100%; border-radius: 24px; }
+    .card-content-backdrop {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(3px);
+      border-radius: 16px;
+      z-index: 4;
+    }
+    .card-text-content {
+      position: relative;
+      z-index: 6;
+      width: 100%;
+      height: 100%;
+      padding: 18px 14px;
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      overflow-y: auto;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    /* Custom scrollbar for card content */
+    .card-text-content::-webkit-scrollbar { width: 3px; }
+    .card-text-content::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    .card-text-content::-webkit-scrollbar-thumb { background: rgba(217,153,56,0.5); border-radius: 10px; }
+    
+    .watermark {
+      position: absolute;
+      bottom: 12px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 9px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 2px;
+      z-index: 15;
+      font-family: monospace;
+      pointer-events: none;
+    }
+    /* Premium users - watermark inapatikana kwa CSS tu, haiwezi kubadilishwa kwa Inspect Element */
+    body.premium-user .watermark { display: none !important; }
+    
+    /* Accordion Styles */
+    .accordion-trigger {
+      background: #f8fafc;
+      padding: 0.85rem 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 1rem;
+      transition: all 0.2s;
+    }
+    .accordion-trigger:hover { background: #f1f5f9; }
+    .accordion-icon { transition: transform 0.3s; }
+    .accordion-icon.rotated { transform: rotate(180deg); }
+    .accordion-panel {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .accordion-panel.open { max-height: 500px; }
+    .accordion-inner { padding: 1rem; }
+    
+    /* Template & Border Grids */
+    .template-grid, .border-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+      gap: 0.7rem;
+    }
+    .template-option, .border-option {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 0.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .template-option:hover, .border-option:hover { border-color: #d99938; transform: translateY(-2px); }
+    .template-option.selected, .border-option.selected { border-color: #d99938; background: #fff8e8; }
+    .color-preview-circle { width: 35px; height: 35px; margin: 0 auto 0.3rem; border-radius: 50%; }
+    
+    /* Network & Payment Options */
+    .network-option, .payment-option {
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 0.7rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .network-option:hover, .payment-option:hover { border-color: #d99938; transform: translateY(-2px); }
+    .network-option.selected, .payment-option.selected { border-color: #d99938; background: #fff8e8; }
+    .network-option i, .payment-option i { font-size: 1.6rem; margin-bottom: 0.3rem; display: block; }
+    
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-container {
+      background: white;
+      border-radius: 2rem;
+      padding: 1.8rem;
+      max-width: 900px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      animation: modalSlideIn 0.3s ease;
+    }
+    @keyframes modalSlideIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    .pricing-card {
+      border: 2px solid #e2e8f0;
+      border-radius: 1.5rem;
+      padding: 1.2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .pricing-card:hover { transform: translateY(-4px); border-color: #d99938; }
+    .pricing-card.selected { border-color: #d99938; background: #fff8e8; }
+    .recommended-badge {
+      position: absolute;
+      top: -12px;
+      right: 16px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.25rem 1rem;
+      border-radius: 40px;
+    }
+    
+    .toast-message {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      z-index: 10000;
+      animation: toastUp 0.3s ease;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+    @keyframes toastUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    
+    @media (max-width: 768px) {
+      .content-overlay { padding: 0.8rem; }
+      .template-grid, .border-grid { grid-template-columns: repeat(3, 1fr); }
+      .invitation-card { max-width: 100%; height: auto; aspect-ratio: 3/4; }
+    }
+  </style>
+</head>
+<body id="appBody">
+
+  <canvas id="particleCanvas"></canvas>
+  <div id="appRoot" class="content-overlay"></div>
+
+  <script>
+    // ==================== FORM STATE PERSISTENCE ====================
+    let formState = {
+      eventType: 'Wedding',
+      familyName: 'Familia ya Mr & Mrs Steven Mushi',
+      honorific: 'Mr & Mrs',
+      guestName: '',
+      firstName: 'Baraka',
+      secondName: 'Grace',
+      day: 'Jumamosi',
+      date: '25 Desemba 2024',
+      time: 'Saa 4:00 Alasiri',
+      venue: 'Ukumbi wa Gardenia',
+      venueType: 'ukumbini',
+      city: 'Dar es Salaam',
+      blessings: '',
+      rsvp: '0712345678'
+    };
+    
+    // ==================== SECURITY & ENCRYPTION ====================
+    const SECRET_KEY = 'InviSys2024SecureKey@Tanzania!';
+    
+    function encryptData(data) {
+      return CryptoJS.AES.encrypt(JSON.stringify(data), SECRET_KEY).toString();
+    }
+    
+    function decryptData(encryptedData) {
+      try {
+        const bytes = CryptoJS.AES.decrypt(encryptedData, SECRET_KEY);
+        return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+      } catch(e) { return null; }
+    }
+    
+    // ==================== INDEXEDDB ====================
+    let db = null;
+    const DB_NAME = 'InviSysDB';
+    const DB_VERSION = 2;
+    
+    function initDatabase() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => { db = request.result; resolve(db); };
+        request.onupgradeneeded = (event) => {
+          const database = event.target.result;
+          if (!database.objectStoreNames.contains('users')) {
+            database.createObjectStore('users', { keyPath: 'id' });
+          }
+          if (!database.objectStoreNames.contains('cards')) {
+            database.createObjectStore('cards', { keyPath: 'id' });
+          }
+          if (!database.objectStoreNames.contains('session')) {
+            database.createObjectStore('session', { keyPath: 'key' });
+          }
+        };
+      });
+    }
+    
+    async function saveToStore(storeName, data) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction([storeName], 'readwrite');
+        tx.objectStore(storeName).put(data);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+    
+    async function getFromStore(storeName, key) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction([storeName], 'readonly');
+        const request = tx.objectStore(storeName).get(key);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+    
+    async function getAllFromStore(storeName) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction([storeName], 'readonly');
+        const request = tx.objectStore(storeName).getAll();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+      });
+    }
+    
+    async function deleteFromStore(storeName, key) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction([storeName], 'readwrite');
+        tx.objectStore(storeName).delete(key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+    
+    async function clearStore(storeName) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction([storeName], 'readwrite');
+        tx.objectStore(storeName).clear();
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+    
+    // ==================== PARTICLE EFFECT ====================
+    const particleCanvas = document.getElementById('particleCanvas');
+    let particleCtx = particleCanvas.getContext('2d');
+    let particles = [];
+    
+    function initParticles() {
+      particleCanvas.width = window.innerWidth;
+      particleCanvas.height = window.innerHeight;
+      const count = Math.min(60, Math.floor(window.innerWidth / 25));
+      particles = [];
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * particleCanvas.width,
+          y: Math.random() * particleCanvas.height,
+          radius: 1 + Math.random() * 2,
+          speed: 0.2 + Math.random() * 0.8,
+          opacity: 0.08 + Math.random() * 0.15
+        });
+      }
+    }
+    
+    function drawParticles() {
+      if (!particleCtx) return;
+      particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+      for (let p of particles) {
+        particleCtx.beginPath();
+        particleCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        particleCtx.fillStyle = `rgba(217, 153, 56, ${p.opacity})`;
+        particleCtx.fill();
+      }
+    }
+    
+    function updateParticles() {
+      for (let p of particles) {
+        p.y += p.speed;
+        if (p.y - p.radius > particleCanvas.height) {
+          p.y = -p.radius;
+          p.x = Math.random() * particleCanvas.width;
+        }
+      }
+    }
+    
+    function animateParticles() {
+      updateParticles();
+      drawParticles();
+      requestAnimationFrame(animateParticles);
+    }
+    
+    window.addEventListener('resize', () => {
+      particleCanvas.width = window.innerWidth;
+      particleCanvas.height = window.innerHeight;
+      initParticles();
+    });
+    
+    // ==================== TRANSLATIONS (With oneTime fixed) ====================
+    const translations = {
+      en: {
+        brand: "InviSys Pro", home: "Creator", myCards: "My Cards", upgrade: "Upgrade", logout: "Logout",
+        loginTitle: "Welcome Back", loginBtn: "Sign In", registerTitle: "Create Account", registerBtn: "Register",
+        email: "Email", password: "Password", fullName: "Full Name", confirmPassword: "Confirm Password",
+        noAccount: "Don't have an account?", haveAccount: "Already have an account?",
+        eventType: "Event", familyName: "Family", honorific: "Title", guestName: "Guest Name",
+        day: "Day", date: "Date", time: "Time", venue: "Venue", venueType: "Venue Type", city: "City",
+        blessings: "Blessings", rsvp: "RSVP", firstName: "Name", secondName: "Partner",
+        wedding: "Wedding", sendoff: "Send-off", birthday: "Birthday", kitchen: "Kitchen Party",
+        accordionBg: "Backgrounds", accordionBorder: "Borders", accordionText: "Text Styles",
+        emerald: "Emerald", golden: "Golden", rose: "Rose", ocean: "Ocean", lavender: "Lavender", sunset: "Sunset", custom: "Custom",
+        flowers: "Flowers", bubbles: "Bubbles", stars: "Stars", hearts: "Hearts", leaves: "Leaves",
+        classic: "Classic", elegant: "Elegant", modern: "Modern", script: "Script", clean: "Clean",
+        white: "White", gold: "Gold", pink: "Pink", coral: "Coral", sky: "Sky", mint: "Mint", plum: "Plum",
+        freePlan: "Free", monthly: "Monthly", lifetime: "Lifetime", perMonth: "/month", oneTime: "one-time",
+        unlimited: "Unlimited cards", allTemplates: "All templates", customBg: "Custom background", noWatermark: "No watermark",
+        saveCard: "Save Card", preview: "Live Preview", cardSaved: "Card saved!", limitReached: "Free limit reached (5 cards). Upgrade to continue!",
+        edit: "Edit", delete: "Delete", download: "Download", noCards: "No saved cards yet",
+        upgradeNow: "Upgrade Now", selectNetwork: "Select Network", phoneNumber: "Phone Number", paymentMethod: "Payment Method",
+        subtotal: "Subtotal", discount: "Discount", total: "Total", apply: "Apply", promoCode: "Promo code",
+        processing: "Processing...", paymentSuccess: "Payment Successful!",
+        invalidEmail: "Invalid email", passwordShort: "Password too short", passwordMismatch: "Passwords don't match", 
+        emailExists: "Email already registered", loginError: "Invalid credentials", registerSuccess: "Account created!",
+        networkSelected: "Network selected: ", paymentSelected: "Payment method selected: "
+      },
+      sw: {
+        brand: "InviSys Pro", home: "Nyumbani", myCards: "Kadi Zangu", upgrade: "Boresha", logout: "Toka",
+        loginTitle: "Karibu Tena", loginBtn: "Ingia", registerTitle: "Unda Akaunti", registerBtn: "Jisajili",
+        email: "Barua pepe", password: "Nywila", fullName: "Jina Kamili", confirmPassword: "Thibitisha Nywila",
+        noAccount: "Huna akaunti?", haveAccount: "Tayari una akaunti?",
+        eventType: "Sherehe", familyName: "Familia", honorific: "Cheo", guestName: "Jina la Mwalikwa",
+        day: "Siku", date: "Tarehe", time: "Muda", venue: "Mahali", venueType: "Aina", city: "Jiji",
+        blessings: "Baraka", rsvp: "RSVP", firstName: "Jina", secondName: "Mwenzi",
+        wedding: "Harusi", sendoff: "Send-off", birthday: "Siku ya Kuzaliwa", kitchen: "Kitchen Party",
+        accordionBg: "Mandhari", accordionBorder: "Ukingo", accordionText: "Maandishi",
+        emerald: "Zumrud", golden: "Dhahabu", rose: "Waridi", ocean: "Bahari", lavender: "Lavenda", sunset: "Machweo", custom: "Maalum",
+        flowers: "Maua", bubbles: "Mapovu", stars: "Nyota", hearts: "Mioyo", leaves: "Majani",
+        classic: "Kawaida", elegant: "Kifahari", modern: "Kisasa", script: "Mwandiko", clean: "Safi",
+        white: "Nyeupe", gold: "Dhahabu", pink: "Pinki", coral: "Matumbawe", sky: "Anga", mint: "Minti", plum: "Zambarau",
+        freePlan: "Bure", monthly: "Kila Mwezi", lifetime: "Maisha Yote", perMonth: "/mwezi", oneTime: "malipo ya mara moja",
+        unlimited: "Kadi zisizo na kikomo", allTemplates: "Rangi zote", customBg: "Picha maalum", noWatermark: "Bila watermark",
+        saveCard: "Hifadhi", preview: "Muonekano", cardSaved: "Kadi imehifadhiwa!", limitReached: "Kikomo cha bure (kadi 5). Boresha ili kuendelea!",
+        edit: "Hariri", delete: "Futa", download: "Pakua", noCards: "Hakuna kadi zilizohifadhiwa",
+        upgradeNow: "Boresha Sasa", selectNetwork: "Chagua Mtandao", phoneNumber: "Namba ya Simu", paymentMethod: "Njia ya Malipo",
+        subtotal: "Jumla ndogo", discount: "Punguzo", total: "Jumla", apply: "Weka", promoCode: "Kodi ya promo",
+        processing: "Inachakata...", paymentSuccess: "Malipo Yamefanikiwa!",
+        invalidEmail: "Barua pepe si sahihi", passwordShort: "Nywila fupi sana", passwordMismatch: "Nywila hazifanani", 
+        emailExists: "Barua pepe tayari ipo", loginError: "Taarifa si sahihi", registerSuccess: "Akaunti imeundwa!",
+        networkSelected: "Mtandao umechaguliwa: ", paymentSelected: "Njia ya malipo imechaguliwa: "
+      },
+      fr: {
+        brand: "InviSys Pro", home: "Créateur", myCards: "Mes Cartes", upgrade: "Premium", logout: "Déconnexion",
+        loginTitle: "Bon Retour", loginBtn: "Connexion", registerTitle: "Créer un Compte", registerBtn: "S'inscrire",
+        email: "E-mail", password: "Mot de passe", fullName: "Nom Complet", confirmPassword: "Confirmer",
+        noAccount: "Pas de compte?", haveAccount: "Déjà un compte?",
+        eventType: "Événement", familyName: "Famille", honorific: "Titre", guestName: "Invité",
+        day: "Jour", date: "Date", time: "Heure", venue: "Lieu", venueType: "Type", city: "Ville",
+        blessings: "Bénédictions", rsvp: "RSVP", firstName: "Prénom", secondName: "Partenaire",
+        wedding: "Mariage", sendoff: "Départ", birthday: "Anniversaire", kitchen: "Kitchen Party",
+        accordionBg: "Thèmes", accordionBorder: "Bordures", accordionText: "Textes",
+        emerald: "Émeraude", golden: "Doré", rose: "Rose", ocean: "Océan", lavender: "Lavande", sunset: "Coucher", custom: "Personnalisé",
+        flowers: "Fleurs", bubbles: "Bulles", stars: "Étoiles", hearts: "Cœurs", leaves: "Feuilles",
+        classic: "Classique", elegant: "Élégant", modern: "Moderne", script: "Script", clean: "Propre",
+        white: "Blanc", gold: "Doré", pink: "Rose", coral: "Corail", sky: "Ciel", mint: "Menthe", plum: "Prune",
+        freePlan: "Gratuit", monthly: "Mensuel", lifetime: "À Vie", perMonth: "/mois", oneTime: "unique",
+        unlimited: "Cartes illimitées", allTemplates: "Tous les thèmes", customBg: "Fond personnalisé", noWatermark: "Sans filigrane",
+        saveCard: "Enregistrer", preview: "Aperçu", cardSaved: "Carte enregistrée!", limitReached: "Limite gratuite atteinte (5 cartes). Passez au premium!",
+        edit: "Modifier", delete: "Supprimer", download: "Télécharger", noCards: "Aucune carte sauvegardée",
+        upgradeNow: "Passer Premium", selectNetwork: "Choisissez le Réseau", phoneNumber: "Téléphone", paymentMethod: "Mode de paiement",
+        subtotal: "Sous-total", discount: "Réduction", total: "Total", apply: "Appliquer", promoCode: "Code promo",
+        processing: "Traitement...", paymentSuccess: "Paiement Réussi!",
+        invalidEmail: "Email invalide", passwordShort: "Mot de passe trop court", passwordMismatch: "Mots de passe différents", 
+        emailExists: "Email déjà utilisé", loginError: "Identifiants invalides", registerSuccess: "Compte créé!",
+        networkSelected: "Réseau sélectionné: ", paymentSelected: "Mode de paiement sélectionné: "
+      }
+    };
+    
+    // ==================== APP STATE ====================
+    let currentUser = null;
+    let currentLang = localStorage.getItem('invisys_lang') || 'en';
+    let currentPage = 'creator';
+    
+    // Design State
+    let currentTemplate = 'emerald';
+    let currentBorder = 'flowers';
+    let currentFont = "'Playfair Display', serif";
+    let currentTextColor = '#FFFFFF';
+    let customImageData = null;
+    
+    // Upgrade modal state
+    let selectedPackage = 'monthly';
+    let selectedNetwork = 'mpesa';
+    let selectedPaymentMethod = 'mpesa';
+    
+    const bgTemplates = {
+      emerald: 'linear-gradient(135deg, #043927, #0a5c3e, #043927)',
+      golden: 'linear-gradient(135deg, #8B7355, #DAA520, #8B7355)',
+      rose: 'linear-gradient(135deg, #ff758c, #ff7eb3, #ff758c)',
+      ocean: 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)',
+      lavender: 'linear-gradient(135deg, #6a3093, #a044ff, #6a3093)',
+      sunset: 'linear-gradient(135deg, #f7971e, #ffd200, #f7971e)',
+      custom: ''
+    };
+    
+    const borderGenerators = {
+      flowers: () => `<svg viewBox="0 0 500 700"><defs><circle id="f" r="5" fill="#d4af37" opacity="0.5"/><g id="flower"><use href="#f"/><use href="#f" transform="rotate(60)"/><use href="#f" transform="rotate(120)"/><use href="#f" transform="rotate(180)"/><use href="#f" transform="rotate(240)"/><use href="#f" transform="rotate(300)"/></g></defs><ellipse cx="250" cy="350" rx="215" ry="305" fill="none" stroke="#d4af37" stroke-width="2" stroke-dasharray="6 4" opacity="0.4"/><use href="#flower" x="250" y="52"/><use href="#flower" x="458" y="350"/><use href="#flower" x="250" y="648"/><use href="#flower" x="42" y="350"/></svg>`,
+      bubbles: () => `<svg viewBox="0 0 500 700"><defs><circle id="b" r="6" fill="none" stroke="#d4af37" stroke-width="1.5" opacity="0.5"/></defs><ellipse cx="250" cy="350" rx="215" ry="305" fill="none" stroke="#d4af37" stroke-width="2" stroke-dasharray="8 6" opacity="0.35"/><use href="#b" x="250" y="52"/><use href="#b" x="458" y="350"/><use href="#b" x="250" y="648"/><use href="#b" x="42" y="350"/></svg>`,
+      stars: () => `<svg viewBox="0 0 500 700"><defs><polygon id="s" points="0,-5 1.5,-1.5 5,-1.5 2.5,1 3.5,5 0,2.5 -3.5,5 -2.5,1 -5,-1.5 -1.5,-1.5" fill="#d4af37" opacity="0.5"/></defs><ellipse cx="250" cy="350" rx="215" ry="305" fill="none" stroke="#d4af37" stroke-width="2" stroke-dasharray="5 5" opacity="0.35"/><use href="#s" x="250" y="50"/><use href="#s" x="460" y="350"/><use href="#s" x="250" y="650"/><use href="#s" x="40" y="350"/></svg>`,
+      hearts: () => `<svg viewBox="0 0 500 700"><defs><path id="h" d="M0,2 A2,2 0 0,1 4,2 A2,2 0 0,1 8,2 Q8,6 4,10 Q0,6 0,2Z" fill="#d4af37" opacity="0.5" transform="scale(0.7)"/></defs><ellipse cx="250" cy="350" rx="215" ry="305" fill="none" stroke="#d4af37" stroke-width="2" stroke-dasharray="6 4" opacity="0.35"/><use href="#h" x="250" y="55"/><use href="#h" x="455" y="350"/><use href="#h" x="250" y="645"/><use href="#h" x="45" y="350"/></svg>`,
+      leaves: () => `<svg viewBox="0 0 500 700"><defs><path id="l" d="M0,0 Q5,-8 12,0 Q5,8 0,0Z" fill="#d4af37" opacity="0.45"/></defs><ellipse cx="250" cy="350" rx="215" ry="305" fill="none" stroke="#d4af37" stroke-width="2" stroke-dasharray="5 5" opacity="0.35"/><use href="#l" x="250" y="50"/><use href="#l" x="460" y="350"/><use href="#l" x="250" y="650"/><use href="#l" x="40" y="350"/></svg>`
+    };
+    
+    // ==================== HELPER FUNCTIONS ====================
+    function showToast(msg, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = 'toast-message';
+      toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>${msg}`;
+      toast.style.background = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#f59e0b';
+      toast.style.color = 'white';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+    
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
+    
+    function hasPremiumAccess(user) {
+      if (!user?.subscription) return false;
+      if (user.subscription.type === 'premium_lifetime') return true;
+      if (user.subscription.type === 'premium_monthly' && user.subscription.endDate) {
+        return new Date(user.subscription.endDate) > new Date();
+      }
+      if (user.subscription.type === 'trial' && user.subscription.endDate) {
+        return new Date(user.subscription.endDate) > new Date();
+      }
+      return false;
+    }
+    
+    function updatePremiumBodyClass() {
+      const isPremium = currentUser ? hasPremiumAccess(currentUser) : false;
+      if (isPremium) {
+        document.body.classList.add('premium-user');
+      } else {
+        document.body.classList.remove('premium-user');
+      }
+    }
+    
+    // ==================== SAVE FORM STATE ====================
+    function saveFormStateToLocal() {
+      const inputs = ['eventType', 'familyName', 'honorific', 'guestName', 'firstName', 'secondName', 'day', 'date', 'time', 'venue', 'venueType', 'city', 'blessings', 'rsvp'];
+      inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) formState[id] = el.value;
+      });
+      localStorage.setItem('invisys_form_state', JSON.stringify(formState));
+    }
+    
+    function loadFormStateFromLocal() {
+      const saved = localStorage.getItem('invisys_form_state');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          Object.assign(formState, parsed);
+        } catch(e) {}
+      }
+    }
+    
+    function restoreFormValues() {
+      Object.keys(formState).forEach(key => {
+        const el = document.getElementById(key);
+        if (el) el.value = formState[key];
+      });
+    }
+    
+    // ==================== CARD CONTENT GENERATION (Dynamic language) ====================
+    function generateCardContent() {
+      const t = translations[currentLang];
+      const type = document.getElementById('eventType')?.value || formState.eventType;
+      const family = document.getElementById('familyName')?.value || formState.familyName;
+      const honor = document.getElementById('honorific')?.value || formState.honorific;
+      let guest = document.getElementById('guestName')?.value || formState.guestName;
+      const day = document.getElementById('day')?.value || formState.day;
+      const date = document.getElementById('date')?.value || formState.date;
+      const time = document.getElementById('time')?.value || formState.time;
+      const venue = document.getElementById('venue')?.value || formState.venue;
+      const venueType = document.getElementById('venueType')?.value || formState.venueType;
+      const city = document.getElementById('city')?.value || formState.city;
+      const blessings = document.getElementById('blessings')?.value || formState.blessings;
+      const rsvp = document.getElementById('rsvp')?.value || formState.rsvp;
+      const first = document.getElementById('firstName')?.value || formState.firstName;
+      const second = document.getElementById('secondName')?.value || formState.secondName;
+      
+      if (!guest.trim()) guest = '___________';
+      const isWedding = (type === 'Wedding' || type === 'Harusi');
+      const venueText = venueType === 'ukumbini' ? `at ${venue} Hall` : venueType === 'nyumbani' ? `at ${venue} Home` : `at ${venue} Hotel`;
+      
+      let couple = isWedding ? 
+        `their beloved children <div style="font-size:18px;font-weight:bold;margin:6px 0;color:${getContrastColor()}"><span>${escapeHtml(first)}</span> <span style="font-size:14px">&</span> <span>${escapeHtml(second)}</span></div>` : 
+        `their beloved child <div style="font-size:18px;font-weight:bold;margin:6px 0;color:${getContrastColor()}">${escapeHtml(first)}</div>`;
+      
+      let icons = "🌹 ✿ 🌸 ✿ 🌹";
+      if (currentBorder === 'bubbles') icons = "🫧 ○ 🫧 ○ 🫧";
+      if (currentBorder === 'stars') icons = "⭐ ✧ ⭐ ✧ ⭐";
+      if (currentBorder === 'hearts') icons = "💖 ❤️ 💖 ❤️ 💖";
+      
+      return `
+        <div style="font-size:20px;margin-bottom:5px">${icons}</div>
+        <div style="font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;border-bottom:1.5px solid rgba(255,255,255,0.4);display:inline-block;padding-bottom:4px">INVITATION</div>
+        <div style="font-size:11px;line-height:1.4;margin-bottom:8px">${escapeHtml(family)} joyfully invite you<br>${escapeHtml(honor)} ${escapeHtml(guest)}</div>
+        <div style="font-size:10px;line-height:1.5;margin:6px 0">to the celebration ${type} ${couple}</div>
+        <div style="font-size:10px;line-height:1.5;margin:6px 0">On <strong>${escapeHtml(day)}, ${escapeHtml(date)}</strong> at <strong>${escapeHtml(time)}</strong><br>${venueText}, ${escapeHtml(city)}</div>
+        ${blessings ? `<div style="font-size:9px;font-style:italic;margin:8px 0;padding:6px;background:rgba(255,255,255,0.12);border-radius:10px">✨ ${escapeHtml(blessings)} ✨</div>` : ''}
+        <div style="font-size:9px;margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.3)">📞 RSVP: <strong>${escapeHtml(rsvp)}</strong></div>
+        <div style="font-size:14px;margin-top:6px">${icons.split(' ').slice(0,3).join(' ')}</div>
+      `;
+    }
+    
+    function getContrastColor() {
+      // Auto-adjust text color for better contrast based on background
+      if (currentTemplate === 'golden' || currentTemplate === 'sunset') {
+        return '#2d3748'; // Dark text for light backgrounds
+      }
+      return currentTextColor;
+    }
+    
+    function updateCardPreview() {
+      const contentDiv = document.getElementById('cardTextContent');
+      if (contentDiv) {
+        contentDiv.innerHTML = generateCardContent();
+        contentDiv.style.fontFamily = currentFont;
+        contentDiv.style.color = getContrastColor();
+      }
+      
+      const bgDiv = document.getElementById('cardBgLayer');
+      if (customImageData && currentTemplate === 'custom') {
+        bgDiv.style.backgroundImage = `url(${customImageData})`;
+        bgDiv.style.backgroundSize = 'cover';
+        bgDiv.style.backgroundPosition = 'center';
+        bgDiv.style.backgroundRepeat = 'no-repeat';
+        bgDiv.style.background = 'none';
+      } else {
+        bgDiv.style.backgroundImage = 'none';
+        bgDiv.style.background = bgTemplates[currentTemplate] || bgTemplates.emerald;
+      }
+      
+      const borderDiv = document.getElementById('cardBorderSvg');
+      if (borderDiv) borderDiv.innerHTML = borderGenerators[currentBorder]() || '';
+    }
+    
+    // ==================== AUTHENTICATION ====================
+    async function handleLogin(e) {
+      e.preventDefault();
+      const t = translations[currentLang];
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      
+      if (!email || !password) { showToast(t.invalidEmail, 'error'); return; }
+      
+      const users = await getAllFromStore('users');
+      const user = users.find(u => u.email === email);
+      
+      if (user) {
+        const decryptedPassword = decryptData(user.password);
+        if (decryptedPassword === password) {
+          currentUser = { ...user };
+          delete currentUser.password;
+          await saveToStore('session', { key: 'currentUser', value: encryptData(currentUser), timestamp: Date.now() });
+          updatePremiumBodyClass();
+          showToast('Login successful!', 'success');
+          currentPage = 'creator';
+          renderApp();
+        } else {
+          showToast(t.loginError, 'error');
+        }
+      } else {
+        showToast(t.loginError, 'error');
+      }
+    }
+    
+    async function handleRegister(e) {
+      e.preventDefault();
+      const t = translations[currentLang];
+      const fullName = document.getElementById('regFullName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const confirm = document.getElementById('regConfirmPassword').value;
+      
+      if (!fullName) { showToast('Please enter full name', 'error'); return; }
+      if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) { showToast(t.invalidEmail, 'error'); return; }
+      if (password.length < 6) { showToast(t.passwordShort, 'error'); return; }
+      if (password !== confirm) { showToast(t.passwordMismatch, 'error'); return; }
+      
+      const users = await getAllFromStore('users');
+      if (users.some(u => u.email === email)) { showToast(t.emailExists, 'error'); return; }
+      
+      const newUser = {
+        id: Date.now(),
+        fullName,
+        email,
+        password: encryptData(password),
+        subscription: { type: 'free', isActive: true },
+        cardsCount: 0,
+        createdAt: new Date().toISOString()
+      };
+      
+      await saveToStore('users', newUser);
+      showToast(t.registerSuccess, 'success');
+      currentPage = 'login';
+      renderApp();
+    }
+    
+    async function handleLogout() {
+      currentUser = null;
+      await clearStore('session');
+      updatePremiumBodyClass();
+      currentPage = 'login';
+      renderApp();
+      showToast('Logged out successfully', 'info');
+    }
+    
+    // ==================== CARD MANAGEMENT ====================
+    async function saveCard() {
+      if (!currentUser) return;
+      const t = translations[currentLang];
+      const cards = await getAllFromStore('cards');
+      const userCards = cards.filter(c => c.userId === currentUser.id);
+      const isPremium = hasPremiumAccess(currentUser);
+      
+      if (!isPremium && userCards.length >= 5) {
+        showToast(t.limitReached, 'error');
+        showUpgradeModal();
+        return;
+      }
+      
+      const cardData = {
+        id: Date.now(),
+        userId: currentUser.id,
+        eventType: document.getElementById('eventType')?.value || formState.eventType,
+        familyName: document.getElementById('familyName')?.value || formState.familyName,
+        honorific: document.getElementById('honorific')?.value || formState.honorific,
+        guestName: document.getElementById('guestName')?.value || formState.guestName,
+        firstName: document.getElementById('firstName')?.value || formState.firstName,
+        secondName: document.getElementById('secondName')?.value || formState.secondName,
+        day: document.getElementById('day')?.value || formState.day,
+        date: document.getElementById('date')?.value || formState.date,
+        time: document.getElementById('time')?.value || formState.time,
+        venue: document.getElementById('venue')?.value || formState.venue,
+        venueType: document.getElementById('venueType')?.value || formState.venueType,
+        city: document.getElementById('city')?.value || formState.city,
+        blessings: document.getElementById('blessings')?.value || formState.blessings,
+        rsvp: document.getElementById('rsvp')?.value || formState.rsvp,
+        template: currentTemplate,
+        border: currentBorder,
+        font: currentFont,
+        textColor: currentTextColor,
+        customImage: customImageData,
+        createdAt: new Date().toISOString()
+      };
+      
+      await saveToStore('cards', cardData);
+      currentUser.cardsCount = (currentUser.cardsCount || 0) + 1;
+      await saveToStore('users', currentUser);
+      showToast(t.cardSaved, 'success');
+      renderApp();
+    }
+    
+    async function editCard(id) {
+      const cards = await getAllFromStore('cards');
+      const card = cards.find(c => c.id === id);
+      if (card) {
+        document.getElementById('eventType') && (document.getElementById('eventType').value = card.eventType || 'Wedding');
+        document.getElementById('familyName') && (document.getElementById('familyName').value = card.familyName || '');
+        document.getElementById('honorific') && (document.getElementById('honorific').value = card.honorific || 'Mr & Mrs');
+        document.getElementById('guestName') && (document.getElementById('guestName').value = card.guestName || '');
+        document.getElementById('firstName') && (document.getElementById('firstName').value = card.firstName || 'Baraka');
+        document.getElementById('secondName') && (document.getElementById('secondName').value = card.secondName || 'Grace');
+        document.getElementById('day') && (document.getElementById('day').value = card.day || 'Saturday');
+        document.getElementById('date') && (document.getElementById('date').value = card.date || '25 December 2024');
+        document.getElementById('time') && (document.getElementById('time').value = card.time || '4:00 PM');
+        document.getElementById('venue') && (document.getElementById('venue').value = card.venue || 'Gardenia Hall');
+        document.getElementById('venueType') && (document.getElementById('venueType').value = card.venueType || 'ukumbini');
+        document.getElementById('city') && (document.getElementById('city').value = card.city || 'Dar es Salaam');
+        document.getElementById('blessings') && (document.getElementById('blessings').value = card.blessings || '');
+        document.getElementById('rsvp') && (document.getElementById('rsvp').value = card.rsvp || '0712345678');
+        
+        currentTemplate = card.template || 'emerald';
+        currentBorder = card.border || 'flowers';
+        currentFont = card.font || "'Playfair Display', serif";
+        currentTextColor = card.textColor || '#FFFFFF';
+        customImageData = card.customImage || null;
+        
+        saveFormStateToLocal();
+        updateCardPreview();
+        currentPage = 'creator';
+        renderApp();
+        showToast('Card loaded for editing!', 'success');
+      }
+    }
+    
+    async function deleteCard(id) {
+      await deleteFromStore('cards', id);
+      renderApp();
+      showToast('Card deleted', 'info');
+    }
+    
+    async function downloadCard(id) {
+      const cardElement = document.getElementById('invitationCardPreview');
+      if (!cardElement) return;
+      try {
+        // For custom images, use proxy or CORS-enabled images
+        const canvas = await html2canvas(cardElement, { 
+          scale: 2, 
+          backgroundColor: null,
+          useCORS: true,
+          allowTaint: false
+        });
+        const link = document.createElement('a');
+        link.download = `invitation_${id}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+        showToast('Download started!', 'success');
+      } catch(err) {
+        console.error('Download error:', err);
+        showToast('Download failed. Try again.', 'error');
+      }
+    }
+    
+    // ==================== UPGRADE MODAL ====================
+    function showUpgradeModal() { document.getElementById('upgradeModal')?.classList.add('active'); }
+    function closeUpgradeModal() { document.getElementById('upgradeModal')?.classList.remove('active'); }
+    function selectPackage(pkg) { 
+      selectedPackage = pkg; 
+      updatePriceSummary();
+      // Update UI selection
+      document.querySelectorAll('.pricing-card').forEach(card => card.classList.remove('selected'));
+      if (pkg === 'monthly') document.getElementById('monthlyCard')?.classList.add('selected');
+      else document.getElementById('lifetimeCard')?.classList.add('selected');
+    }
+    function selectNetwork(network) {
+      const t = translations[currentLang];
+      selectedNetwork = network;
+      document.querySelectorAll('.network-option').forEach(opt => opt.classList.remove('selected'));
+      document.querySelector(`.network-option[data-network="${network}"]`)?.classList.add('selected');
+      showToast(t.networkSelected + network.toUpperCase(), 'info');
+    }
+    function selectPaymentMethod(method) {
+      const t = translations[currentLang];
+      selectedPaymentMethod = method;
+      document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+      document.querySelector(`.payment-option[data-method="${method}"]`)?.classList.add('selected');
+      showToast(t.paymentSelected + method.toUpperCase(), 'info');
+    }
+    
+    function updatePriceSummary() {
+      const base = selectedPackage === 'monthly' ? 10000 : 150000;
+      document.getElementById('summaryTotal') && (document.getElementById('summaryTotal').innerText = `TSh ${base.toLocaleString()}`);
+    }
+    
+    function applyPromoCode() {
+      const code = document.getElementById('promoInput')?.value.trim();
+      if (!code) { showToast('Enter promo code', 'error'); return; }
+      if (code.toUpperCase() === 'TRIAL7') {
+        showToast('7-day free trial activated!', 'success');
+        document.getElementById('summaryTotal').innerText = 'TSh 0';
+      } else if (code.toUpperCase() === 'WELCOME20') {
+        showToast('20% discount applied!', 'success');
+        const base = selectedPackage === 'monthly' ? 10000 : 150000;
+        document.getElementById('summaryTotal').innerText = `TSh ${Math.floor(base * 0.8).toLocaleString()}`;
+      } else {
+        showToast('Invalid promo code', 'error');
+      }
+    }
+    
+    async function processUpgrade() {
+      const phone = document.getElementById('phoneInput')?.value.trim();
+      if (!phone || phone.length < 10) { showToast('Enter valid phone number', 'error'); return; }
+      
+      const statusDiv = document.getElementById('paymentStatus');
+      const confirmBtn = document.getElementById('upgradeConfirmBtn');
+      if (statusDiv) statusDiv.innerHTML = '<div class="text-blue-600"><i class="fas fa-spinner fa-spin"></i> Processing...</div>';
+      if (confirmBtn) confirmBtn.disabled = true;
+      
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const endDate = selectedPackage === 'monthly' ? new Date(Date.now() + 30 * 86400000).toISOString() : null;
+      currentUser.subscription = {
+        type: selectedPackage === 'monthly' ? 'premium_monthly' : 'premium_lifetime',
+        startDate: new Date().toISOString(),
+        endDate: endDate,
+        isActive: true
+      };
+      await saveToStore('users', currentUser);
+      updatePremiumBodyClass();
+      
+      if (statusDiv) statusDiv.innerHTML = '<div class="text-green-600"><i class="fas fa-check-circle"></i> Payment Successful! Welcome to Premium!</div>';
+      showToast('Welcome to Premium!', 'success');
+      setTimeout(() => { closeUpgradeModal(); renderApp(); }, 1500);
+    }
+    
+    // ==================== UI RENDERING ====================
+    function setupNameFields() {
+      const container = document.getElementById('dynamicNamesContainer');
+      if (!container) return;
+      const type = document.getElementById('eventType')?.value || formState.eventType;
+      const isWedding = (type === 'Wedding' || type === 'Harusi');
+      const t = translations[currentLang];
+      container.innerHTML = isWedding ? 
+        `<div><label class="text-xs font-semibold text-gray-600">👨 ${t.firstName}</label><input type="text" id="firstName" value="${escapeHtml(formState.firstName)}" class="w-full mt-1 p-2 border rounded-xl"></div>
+         <div><label class="text-xs font-semibold text-gray-600">👩 ${t.secondName}</label><input type="text" id="secondName" value="${escapeHtml(formState.secondName)}" class="w-full mt-1 p-2 border rounded-xl"></div>` :
+        `<div><label class="text-xs font-semibold text-gray-600">👤 ${t.firstName}</label><input type="text" id="firstName" value="${escapeHtml(formState.firstName)}" class="w-full mt-1 p-2 border rounded-xl"></div>`;
+      
+      ['firstName', 'secondName'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', () => { saveFormStateToLocal(); updateCardPreview(); });
+      });
+    }
+    
+    function populateTemplateGrid() {
+      const t = translations[currentLang];
+      const grid = document.getElementById('templateGrid');
+      if (!grid) return;
+      const templates = [
+        { id: 'emerald', name: t.emerald, color: 'linear-gradient(135deg, #043927, #0a5c3e)' },
+        { id: 'golden', name: t.golden, color: 'linear-gradient(135deg, #8B7355, #DAA520)' },
+        { id: 'rose', name: t.rose, color: 'linear-gradient(135deg, #ff758c, #ff7eb3)' },
+        { id: 'ocean', name: t.ocean, color: 'linear-gradient(135deg, #0f2027, #203a43)' },
+        { id: 'lavender', name: t.lavender, color: 'linear-gradient(135deg, #6a3093, #a044ff)' },
+        { id: 'sunset', name: t.sunset, color: 'linear-gradient(135deg, #f7971e, #ffd200)' },
+        { id: 'custom', name: t.custom, color: '#ccc' }
+      ];
+      grid.innerHTML = templates.map(tmpl => `<div class="template-option ${currentTemplate === tmpl.id ? 'selected' : ''}" data-template="${tmpl.id}"><div class="color-preview-circle" style="background: ${tmpl.color}"></div><span class="text-xs">${tmpl.name}</span></div>`).join('');
+      
+      document.querySelectorAll('.template-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          const isPremium = hasPremiumAccess(currentUser);
+          const tmpl = opt.dataset.template;
+          if (tmpl === 'custom' && !isPremium) { showUpgradeModal(); return; }
+          document.querySelectorAll('.template-option').forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          currentTemplate = tmpl;
+          const customArea = document.getElementById('customUploadArea');
+          if (customArea) customArea.style.display = (tmpl === 'custom' && isPremium) ? 'block' : 'none';
+          updateCardPreview();
+        });
+      });
+    }
+    
+    function populateBorderGrid() {
+      const t = translations[currentLang];
+      const grid = document.getElementById('borderGrid');
+      if (!grid) return;
+      const borders = [
+        { id: 'flowers', name: t.flowers, icon: '🌸' },
+        { id: 'bubbles', name: t.bubbles, icon: '🫧' },
+        { id: 'stars', name: t.stars, icon: '⭐' },
+        { id: 'hearts', name: t.hearts, icon: '💖' },
+        { id: 'leaves', name: t.leaves, icon: '🍃' }
+      ];
+      grid.innerHTML = borders.map(b => `<div class="border-option ${currentBorder === b.id ? 'selected' : ''}" data-border="${b.id}"><i class="fas fa-${b.id === 'flowers' ? 'fan' : b.id === 'bubbles' ? 'circle' : b.id === 'stars' ? 'star' : b.id === 'hearts' ? 'heart' : 'leaf'}"></i><span class="text-xs block">${b.name}</span></div>`).join('');
+      
+      document.querySelectorAll('.border-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          document.querySelectorAll('.border-option').forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          currentBorder = opt.dataset.border;
+          updateCardPreview();
+        });
+      });
+    }
+    
+    function populateFontAndColor() {
+      const t = translations[currentLang];
+      const fontGrid = document.getElementById('fontGrid');
+      const colorGrid = document.getElementById('colorGrid');
+      if (!fontGrid || !colorGrid) return;
+      
+      const fonts = [
+        { name: t.classic, value: "'Playfair Display', serif" },
+        { name: t.elegant, value: "'Great Vibes', cursive" },
+        { name: t.modern, value: "'Poppins', sans-serif" },
+        { name: t.script, value: "'Dancing Script', cursive" },
+        { name: t.clean, value: "'Inter', sans-serif" }
+      ];
+      fontGrid.innerHTML = fonts.map(f => `<button class="font-chip px-3 py-1 rounded-full border-2 ${currentFont === f.value ? 'border-amber-500 bg-amber-50' : 'border-gray-200'} text-sm mr-2 mb-2" data-font="${f.value}">${f.name}</button>`).join('');
+      
+      const colors = [
+        { name: t.white, value: '#FFFFFF', bg: 'white', textColor: '#333' },
+        { name: t.gold, value: '#FFD700', bg: '#FFD700', textColor: '#333' },
+        { name: t.pink, value: '#FFB6C1', bg: '#FFB6C1', textColor: '#333' },
+        { name: t.coral, value: '#FF6347', bg: '#FF6347', textColor: 'white' },
+        { name: t.sky, value: '#87CEEB', bg: '#87CEEB', textColor: '#333' },
+        { name: t.mint, value: '#98FB98', bg: '#98FB98', textColor: '#333' },
+        { name: t.plum, value: '#DDA0DD', bg: '#DDA0DD', textColor: '#333' }
+      ];
+      colorGrid.innerHTML = colors.map(c => `<button class="color-chip px-3 py-1 rounded-full border-2 ${currentTextColor === c.value ? 'border-amber-500 bg-amber-50' : 'border-gray-200'} text-sm mr-2 mb-2 flex items-center gap-2" data-color="${c.value}" style="color: ${c.textColor}"><div style="width:16px;height:16px;background:${c.bg};border-radius:50%;border:1px solid #ccc;"></div>${c.name}</button>`).join('');
+      
+      document.querySelectorAll('.font-chip').forEach(btn => {
+        btn.addEventListener('click', () => { currentFont = btn.dataset.font; updateCardPreview(); });
+      });
+      document.querySelectorAll('.color-chip').forEach(btn => {
+        btn.addEventListener('click', () => { currentTextColor = btn.dataset.color; updateCardPreview(); });
+      });
+    }
+    
+    function setupAccordions() {
+      const accordions = ['accordion1', 'accordion2', 'accordion3'];
+      accordions.forEach(id => {
+        const trigger = document.getElementById(id);
+        if (trigger) {
+          trigger.addEventListener('click', () => {
+            const panelId = trigger.dataset.panel;
+            const panel = document.getElementById(panelId);
+            const icon = trigger.querySelector('.accordion-icon');
+            if (panel) {
+              panel.classList.toggle('open');
+              if (icon) icon.classList.toggle('rotated');
+            }
+          });
+        }
+      });
+    }
+    
+    function setupCustomImageUpload() {
+      const fileInput = document.getElementById('customImageFile');
+      if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              customImageData = ev.target.result;
+              const preview = document.getElementById('customPreview');
+              if (preview) preview.innerHTML = `<img src="${customImageData}" class="h-16 rounded-lg object-cover mx-auto">`;
+              const removeBtn = document.getElementById('removeCustomBtn');
+              if (removeBtn) removeBtn.classList.remove('hidden');
+              if (currentTemplate === 'custom') updateCardPreview();
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+      const removeBtn = document.getElementById('removeCustomBtn');
+      if (removeBtn) {
+        removeBtn.addEventListener('click', () => {
+          customImageData = null;
+          const preview = document.getElementById('customPreview');
+          if (preview) preview.innerHTML = '';
+          removeBtn.classList.add('hidden');
+          if (document.getElementById('customImageFile')) document.getElementById('customImageFile').value = '';
+          if (currentTemplate === 'custom') updateCardPreview();
+        });
+      }
+    }
+    
+    function attachFormListeners() {
+      const inputs = ['eventType', 'familyName', 'honorific', 'guestName', 'firstName', 'secondName', 'day', 'date', 'time', 'venue', 'venueType', 'city', 'blessings', 'rsvp'];
+      inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.removeEventListener('input', saveFormStateToLocal);
+          el.removeEventListener('input', updateCardPreview);
+          el.addEventListener('input', saveFormStateToLocal);
+          el.addEventListener('input', updateCardPreview);
+        }
+      });
+    }
+    
+    // Language change without losing form state
+    function changeLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('invisys_lang', lang);
+      // Re-render but preserve form values
+      const currentFormValues = {};
+      Object.keys(formState).forEach(key => {
+        const el = document.getElementById(key);
+        if (el) currentFormValues[key] = el.value;
+      });
+      renderApp();
+      // Restore form values after render
+      setTimeout(() => {
+        Object.keys(currentFormValues).forEach(key => {
+          const el = document.getElementById(key);
+          if (el) el.value = currentFormValues[key];
+        });
+        updateCardPreview();
+      }, 50);
+    }
+    
+    function renderHeader() {
+      const t = translations[currentLang];
+      const isPremium = currentUser ? hasPremiumAccess(currentUser) : false;
+      
+      if (!currentUser) {
+        return `<div class="glass-header px-5 py-3 flex justify-between items-center flex-wrap gap-3">
+          <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center"><i class="fas fa-envelope-open-text text-white text-xl"></i></div><div><div class="font-bold text-xl text-white">${t.brand}</div></div></div>
+          <div class="flex gap-2"><div class="bg-white/10 backdrop-blur rounded-full px-4 py-2 flex gap-2"><button class="lang-switch ${currentLang === 'en' ? 'text-amber-400 font-bold' : 'text-white/60'} px-2" data-lang="en">EN</button><button class="lang-switch ${currentLang === 'sw' ? 'text-amber-400 font-bold' : 'text-white/60'} px-2" data-lang="sw">SW</button><button class="lang-switch ${currentLang === 'fr' ? 'text-amber-400 font-bold' : 'text-white/60'} px-2" data-lang="fr">FR</button></div></div></div>`;
+      }
+      
+      return `<div class="glass-header px-5 py-3 flex justify-between items-center flex-wrap gap-3">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="switchPage('creator')"><div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center"><i class="fas fa-envelope-open-text text-white text-xl"></i></div><div><div class="font-bold text-xl text-white">${t.brand}</div></div></div>
+        <div class="flex gap-1 bg-white/10 backdrop-blur rounded-full p-1"><button class="nav-btn px-4 py-2 rounded-full text-sm transition ${currentPage === 'creator' ? 'bg-amber-500 text-white' : 'text-white/70 hover:text-white'}" data-page="creator"><i class="fas fa-home mr-1"></i>${t.home}</button><button class="nav-btn px-4 py-2 rounded-full text-sm transition ${currentPage === 'cards' ? 'bg-amber-500 text-white' : 'text-white/70 hover:text-white'}" data-page="cards"><i class="fas fa-id-card mr-1"></i>${t.myCards}</button></div>
+        <div class="flex items-center gap-3 flex-wrap">${isPremium ? `<div class="bg-amber-500/20 backdrop-blur rounded-full px-3 py-1 text-xs text-amber-300"><i class="fas fa-crown mr-1"></i>PREMIUM</div>` : `<button class="bg-amber-500 hover:bg-amber-600 px-4 py-2 rounded-full text-sm font-medium" onclick="showUpgradeModal()"><i class="fas fa-gem mr-1"></i>${t.upgrade}</button>`}<div class="flex items-center gap-2 bg-white/10 backdrop-blur rounded-full px-3 py-1"><div class="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-sm font-bold">${currentUser.fullName.charAt(0)}</div><span class="text-sm hidden sm:inline text-white/80">${currentUser.fullName.split(' ')[0]}</span></div><div class="bg-white/10 backdrop-blur rounded-full px-3 py-1 flex gap-1"><button class="lang-switch text-xs ${currentLang === 'en' ? 'text-amber-400 font-bold' : 'text-white/60'} px-1" data-lang="en">EN</button><button class="lang-switch text-xs ${currentLang === 'sw' ? 'text-amber-400 font-bold' : 'text-white/60'} px-1" data-lang="sw">SW</button><button class="lang-switch text-xs ${currentLang === 'fr' ? 'text-amber-400 font-bold' : 'text-white/60'} px-1" data-lang="fr">FR</button></div><button class="bg-red-500/80 hover:bg-red-600 px-4 py-2 rounded-full text-sm" onclick="handleLogout()"><i class="fas fa-sign-out-alt mr-1"></i>${t.logout}</button></div>
+      </div>`;
+    }
+    
+    async function renderCreatorPage() {
+      const t = translations[currentLang];
+      const isPremium = hasPremiumAccess(currentUser);
+      const cards = await getAllFromStore('cards');
+      const userCardsCount = cards.filter(c => c.userId === currentUser.id).length;
+      const hasReachedLimit = !isPremium && userCardsCount >= 5;
+      
+      return `<div class="grid lg:grid-cols-2 gap-6">
+        <div class="glass-card p-5"><div class="flex items-center gap-2 mb-4"><i class="fas fa-pen-alt text-amber-500 text-xl"></i><h2 class="text-xl font-bold text-gray-800">Create Invitation</h2></div>
+          <div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-semibold text-gray-600">🎊 ${t.eventType}</label><select id="eventType" class="w-full mt-1 p-2 border rounded-xl"><option ${formState.eventType === t.wedding || formState.eventType === 'Wedding' ? 'selected' : ''}>${t.wedding}</option><option ${formState.eventType === t.sendoff || formState.eventType === 'Send-off' ? 'selected' : ''}>${t.sendoff}</option><option ${formState.eventType === t.birthday || formState.eventType === 'Birthday' ? 'selected' : ''}>${t.birthday}</option><option ${formState.eventType === t.kitchen || formState.eventType === 'Kitchen Party' ? 'selected' : ''}>${t.kitchen}</option></select></div><div><label class="text-xs font-semibold text-gray-600">👨‍👩‍👧 ${t.familyName}</label><input type="text" id="familyName" value="${escapeHtml(formState.familyName)}" class="w-full mt-1 p-2 border rounded-xl"></div><div><label class="text-xs font-semibold text-gray-600">👔 ${t.honorific}</label><select id="honorific" class="w-full mt-1 p-2 border rounded-xl"><option ${formState.honorific === 'Mr & Mrs' ? 'selected' : ''}>Mr & Mrs</option><option ${formState.honorific === 'Mr' ? 'selected' : ''}>Mr</option><option ${formState.honorific === 'Mrs' ? 'selected' : ''}>Mrs</option><option ${formState.honorific === 'Miss' ? 'selected' : ''}>Miss</option></select></div><div><label class="text-xs font-semibold text-gray-600">📝 ${t.guestName}</label><input type="text" id="guestName" value="${escapeHtml(formState.guestName)}" class="w-full mt-1 p-2 border rounded-xl"></div></div>
+          <div id="dynamicNamesContainer" class="grid grid-cols-2 gap-3 mt-3"></div>
+          <div class="grid grid-cols-3 gap-3 mt-3"><div><label class="text-xs font-semibold text-gray-600">📅 ${t.day}</label><input type="text" id="day" value="${escapeHtml(formState.day)}" class="w-full mt-1 p-2 border rounded-xl"></div><div><label class="text-xs font-semibold text-gray-600">🗓️ ${t.date}</label><input type="text" id="date" value="${escapeHtml(formState.date)}" class="w-full mt-1 p-2 border rounded-xl"></div><div><label class="text-xs font-semibold text-gray-600">⏰ ${t.time}</label><input type="text" id="time" value="${escapeHtml(formState.time)}" class="w-full mt-1 p-2 border rounded-xl"></div></div>
+          <div class="grid grid-cols-2 gap-3 mt-3"><div><label class="text-xs font-semibold text-gray-600">📍 ${t.venue}</label><input type="text" id="venue" value="${escapeHtml(formState.venue)}" class="w-full mt-1 p-2 border rounded-xl"></div><div><label class="text-xs font-semibold text-gray-600">🏢 ${t.venueType}</label><select id="venueType" class="w-full mt-1 p-2 border rounded-xl"><option ${formState.venueType === 'ukumbini' ? 'selected' : ''} value="ukumbini">Hall</option><option ${formState.venueType === 'nyumbani' ? 'selected' : ''} value="nyumbani">Home</option><option ${formState.venueType === 'hotelini' ? 'selected' : ''} value="hotelini">Hotel</option></select></div><div><label class="text-xs font-semibold text-gray-600">🌆 ${t.city}</label><input type="text" id="city" value="${escapeHtml(formState.city)}" class="w-full mt-1 p-2 border rounded-xl"></div><div><label class="text-xs font-semibold text-gray-600">📞 ${t.rsvp}</label><input type="text" id="rsvp" value="${escapeHtml(formState.rsvp)}" class="w-full mt-1 p-2 border rounded-xl"></div></div>
+          <div class="mt-3"><label class="text-xs font-semibold text-gray-600">🙏 ${t.blessings}</label><textarea id="blessings" rows="2" class="w-full mt-1 p-2 border rounded-xl" placeholder="May God bless you abundantly">${escapeHtml(formState.blessings)}</textarea></div>
+        </div>
+        <div class="glass-card p-5"><div class="flex items-center gap-2 mb-4"><i class="fas fa-palette text-amber-500 text-xl"></i><h2 class="text-xl font-bold text-gray-800">Card Designer</h2></div>
+          <div class="border rounded-xl mb-3"><div class="flex justify-between items-center p-3 bg-gray-50 cursor-pointer" id="accordion1" data-panel="panel1"><h3 class="text-sm font-bold"><i class="fas fa-image mr-2"></i>${t.accordionBg}</h3><i class="fas fa-chevron-down accordion-icon"></i></div><div id="panel1" class="accordion-panel"><div class="accordion-inner"><div id="templateGrid" class="template-grid"></div><div id="customUploadArea" style="display:none" class="mt-3"><div class="border-2 border-dashed border-amber-400 rounded-xl p-3 text-center cursor-pointer" onclick="document.getElementById('customImageFile').click()"><input type="file" id="customImageFile" accept="image/*" style="display:none"><i class="fas fa-cloud-upload-alt text-2xl text-amber-500"></i><p class="text-sm mt-1">Click to upload image</p></div><div id="customPreview" class="mt-2 text-center"></div><button id="removeCustomBtn" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm mt-2 hidden">Remove</button></div></div></div></div>
+          <div class="border rounded-xl mb-3"><div class="flex justify-between items-center p-3 bg-gray-50 cursor-pointer" id="accordion2" data-panel="panel2"><h3 class="text-sm font-bold"><i class="fas fa-border-all mr-2"></i>${t.accordionBorder}</h3><i class="fas fa-chevron-down accordion-icon"></i></div><div id="panel2" class="accordion-panel"><div class="accordion-inner"><div id="borderGrid" class="border-grid"></div></div></div></div>
+          <div class="border rounded-xl mb-3"><div class="flex justify-between items-center p-3 bg-gray-50 cursor-pointer" id="accordion3" data-panel="panel3"><h3 class="text-sm font-bold"><i class="fas fa-font mr-2"></i>${t.accordionText}</h3><i class="fas fa-chevron-down accordion-icon"></i></div><div id="panel3" class="accordion-panel"><div class="accordion-inner"><div id="fontGrid" class="mb-3"></div><div id="colorGrid"></div></div></div></div>
+          <div class="mt-4 pt-3 border-t-2 border-dashed"><div class="flex items-center gap-2 mb-3"><i class="fas fa-eye text-amber-500"></i><span class="text-sm font-semibold">${t.preview}</span></div><div id="invitationCardPreview" class="invitation-card"><div id="cardBgLayer" class="card-bg-layer"></div><div class="card-overlay"></div><div id="cardBorderSvg" class="card-border-layer"></div><div class="card-content-backdrop"></div><div id="cardTextContent" class="card-text-content"></div><div class="watermark">🔷 InviSys 🔷</div></div></div>
+          <button class="w-full mt-4 py-3 rounded-xl font-bold text-white ${hasReachedLimit ? 'bg-gray-400 cursor-not-allowed' : 'btn-primary'}" ${hasReachedLimit ? 'disabled' : ''} onclick="saveCard()"><i class="fas fa-save mr-2"></i>${hasReachedLimit ? 'Upgrade to Unlock' : t.saveCard}</button>
+          ${!isPremium && !hasReachedLimit ? `<p class="text-xs text-center text-gray-500 mt-3">📊 Free: ${userCardsCount}/5 cards. <button onclick="showUpgradeModal()" class="text-amber-600 underline">Upgrade</button> for unlimited</p>` : ''}
+        </div>
+      </div>`;
+    }
+    
+    async function renderCardsPage() {
+      const t = translations[currentLang];
+      const cards = await getAllFromStore('cards');
+      const userCards = cards.filter(c => c.userId === currentUser?.id);
+      if (userCards.length === 0) return `<div class="glass-card p-12 text-center"><i class="fas fa-folder-open text-5xl text-gray-400 mb-3"></i><p class="text-gray-500">${t.noCards}</p></div>`;
+      return `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${userCards.map(card => `<div class="glass-card p-4"><div class="flex justify-between items-start mb-2"><div class="text-sm font-bold text-amber-700"><i class="fas fa-calendar-alt mr-1"></i>${escapeHtml(card.eventType)}</div><div class="text-xs text-gray-400">${new Date(card.createdAt).toLocaleDateString()}</div></div><div class="flex gap-2 mt-3"><button class="bg-teal-600 text-white px-3 py-1.5 rounded-lg text-xs" onclick="editCard(${card.id})"><i class="fas fa-edit"></i> ${t.edit}</button><button class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs" onclick="downloadCard(${card.id})"><i class="fas fa-download"></i> ${t.download}</button><button class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs" onclick="deleteCard(${card.id})"><i class="fas fa-trash"></i> ${t.delete}</button></div></div>`).join('')}</div>`;
+    }
+    
+    function renderLoginPage() {
+      const t = translations[currentLang];
+      return `<div class="min-h-[80vh] flex items-center justify-center"><div class="glass-card p-8 max-w-md w-full"><div class="text-center mb-6"><div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center mx-auto mb-4"><i class="fas fa-envelope-open-text text-3xl text-white"></i></div><h2 class="text-2xl font-bold text-gray-800">${t.loginTitle}</h2></div><form onsubmit="handleLogin(event)"><div class="mb-4"><label class="block text-sm font-semibold text-gray-700 mb-1">${t.email}</label><input type="email" id="loginEmail" class="w-full p-3 border rounded-xl" required></div><div class="mb-4"><label class="block text-sm font-semibold text-gray-700 mb-1">${t.password}</label><input type="password" id="loginPassword" class="w-full p-3 border rounded-xl" required></div><button type="submit" class="w-full btn-primary py-3 rounded-xl font-bold text-white">${t.loginBtn}</button></form><div class="text-center mt-4 text-gray-500">${t.noAccount} <button onclick="switchPage('register')" class="text-amber-600 font-semibold">${t.registerBtn}</button></div></div></div>`;
+    }
+    
+    function renderRegisterPage() {
+      const t = translations[currentLang];
+      return `<div class="min-h-[80vh] flex items-center justify-center"><div class="glass-card p-8 max-w-md w-full"><div class="text-center mb-6"><div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center mx-auto mb-4"><i class="fas fa-envelope-open-text text-3xl text-white"></i></div><h2 class="text-2xl font-bold text-gray-800">${t.registerTitle}</h2></div><form onsubmit="handleRegister(event)"><div class="mb-3"><label class="block text-sm font-semibold text-gray-700 mb-1">${t.fullName}</label><input type="text" id="regFullName" class="w-full p-3 border rounded-xl" required></div><div class="mb-3"><label class="block text-sm font-semibold text-gray-700 mb-1">${t.email}</label><input type="email" id="regEmail" class="w-full p-3 border rounded-xl" required></div><div class="mb-3"><label class="block text-sm font-semibold text-gray-700 mb-1">${t.password}</label><input type="password" id="regPassword" class="w-full p-3 border rounded-xl" required></div><div class="mb-3"><label class="block text-sm font-semibold text-gray-700 mb-1">${t.confirmPassword}</label><input type="password" id="regConfirmPassword" class="w-full p-3 border rounded-xl" required></div><button type="submit" class="w-full btn-primary py-3 rounded-xl font-bold text-white">${t.registerBtn}</button></form><div class="text-center mt-4 text-gray-500">${t.haveAccount} <button onclick="switchPage('login')" class="text-amber-600 font-semibold">${t.loginBtn}</button></div></div></div>`;
+    }
+    
+    function renderUpgradeModalContent() {
+      const t = translations[currentLang];
+      return `<div class="flex justify-between items-center mb-5"><h2 class="text-2xl font-bold"><i class="fas fa-crown text-amber-500 mr-2"></i>${t.upgradeNow}</h2><button onclick="closeUpgradeModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-2xl"></i></button></div>
+        <div class="grid md:grid-cols-2 gap-4 mb-6">
+          <div id="monthlyCard" class="pricing-card ${selectedPackage === 'monthly' ? 'selected' : ''} relative" onclick="selectPackage('monthly')"><div class="recommended-badge">Popular</div><i class="fas fa-calendar-alt text-3xl text-amber-500 mb-2"></i><h3 class="font-bold text-lg">${t.monthly}</h3><div class="text-3xl font-bold my-2">TSh 10,000<span class="text-sm font-normal">${t.perMonth}</span></div><ul class="text-left text-sm space-y-1"><li>✓ ${t.unlimited}</li><li>✓ ${t.allTemplates}</li><li>✓ ${t.customBg}</li><li>✓ ${t.noWatermark}</li></ul></div>
+          <div id="lifetimeCard" class="pricing-card ${selectedPackage === 'lifetime' ? 'selected' : ''}" onclick="selectPackage('lifetime')"><i class="fas fa-infinity text-3xl text-amber-500 mb-2"></i><h3 class="font-bold text-lg">${t.lifetime}</h3><div class="text-3xl font-bold my-2">TSh 150,000<span class="text-sm font-normal"> ${t.oneTime}</span></div><ul class="text-left text-sm space-y-1"><li>✓ ${t.unlimited}</li><li>✓ ${t.allTemplates}</li><li>✓ ${t.customBg}</li><li>✓ Lifetime access</li></ul></div>
+        </div>
+        <div class="bg-gray-50 rounded-xl p-4 mb-4"><div class="flex gap-2"><input type="text" id="promoInput" class="flex-1 p-2 border rounded-xl" placeholder="${t.promoCode}"><button class="btn-secondary px-4 rounded-xl text-white" onclick="applyPromoCode()">${t.apply}</button></div><div id="promoMsg" class="text-xs mt-2"></div></div>
+        <div class="grid md:grid-cols-2 gap-4 mb-4"><div><label class="block text-sm font-semibold mb-2">${t.selectNetwork}</label><div class="flex gap-2"><button class="network-option flex-1 p-2 border rounded-lg ${selectedNetwork === 'mpesa' ? 'selected border-amber-500' : ''}" data-network="mpesa" onclick="selectNetwork('mpesa')"><i class="fas fa-mobile-alt text-green-600"></i><span class="block text-xs">M-PESA</span></button><button class="network-option flex-1 p-2 border rounded-lg ${selectedNetwork === 'tigo' ? 'selected border-amber-500' : ''}" data-network="tigo" onclick="selectNetwork('tigo')"><i class="fas fa-mobile-alt text-blue-600"></i><span class="block text-xs">Tigo Pesa</span></button><button class="network-option flex-1 p-2 border rounded-lg ${selectedNetwork === 'airtel' ? 'selected border-amber-500' : ''}" data-network="airtel" onclick="selectNetwork('airtel')"><i class="fas fa-mobile-alt text-red-600"></i><span class="block text-xs">Airtel</span></button></div></div><div><label class="block text-sm font-semibold mb-2">${t.phoneNumber}</label><input type="tel" id="phoneInput" class="w-full p-2 border rounded-lg" placeholder="0712345678"></div></div>
+        <div class="mb-4"><label class="block text-sm font-semibold mb-2">${t.paymentMethod}</label><div class="flex gap-2"><button class="payment-option flex-1 p-2 border rounded-lg ${selectedPaymentMethod === 'mpesa' ? 'selected border-amber-500' : ''}" data-method="mpesa" onclick="selectPaymentMethod('mpesa')"><i class="fab fa-amazon-pay text-green-600"></i><span class="block text-xs">M-PESA</span></button><button class="payment-option flex-1 p-2 border rounded-lg ${selectedPaymentMethod === 'bank' ? 'selected border-amber-500' : ''}" data-method="bank" onclick="selectPaymentMethod('bank')"><i class="fas fa-university text-blue-600"></i><span class="block text-xs">Bank</span></button><button class="payment-option flex-1 p-2 border rounded-lg ${selectedPaymentMethod === 'card' ? 'selected border-amber-500' : ''}" data-method="card" onclick="selectPaymentMethod('card')"><i class="fab fa-cc-visa text-purple-600"></i><span class="block text-xs">Card</span></button></div></div>
+        <div class="bg-amber-50 rounded-xl p-4 mb-4"><div class="flex justify-between py-2"><span>${t.total}:</span><span id="summaryTotal" class="text-xl font-bold text-amber-600">TSh 10,000</span></div></div>
+        <div id="paymentStatus" class="text-center mb-3"></div>
+        <button id="upgradeConfirmBtn" class="w-full btn-primary py-3 rounded-xl font-bold text-white" onclick="processUpgrade()"><i class="fas fa-lock mr-2"></i>${t.upgradeNow}</button>`;
+    }
+    
+    // ==================== APP INITIALIZATION ====================
+    window.switchPage = (page) => { currentPage = page; renderApp(); };
+    window.handleLogin = handleLogin;
+    window.handleRegister = handleRegister;
+    window.handleLogout = handleLogout;
+    window.saveCard = saveCard;
+    window.editCard = editCard;
+    window.deleteCard = deleteCard;
+    window.downloadCard = downloadCard;
+    window.showUpgradeModal = showUpgradeModal;
+    window.closeUpgradeModal = closeUpgradeModal;
+    window.selectPackage = selectPackage;
+    window.selectNetwork = selectNetwork;
+    window.selectPaymentMethod = selectPaymentMethod;
+    window.applyPromoCode = applyPromoCode;
+    window.processUpgrade = processUpgrade;
+    
+    async function renderApp() {
+      const root = document.getElementById('appRoot');
+      if (!root) return;
+      
+      let html = renderHeader();
+      
+      if (!currentUser) {
+        const session = await getFromStore('session', 'currentUser');
+        if (session) {
+          const userData = decryptData(session.value);
+          if (userData && userData.id) {
+            currentUser = userData;
+            updatePremiumBodyClass();
+          }
+        }
+      }
+      
+      if (!currentUser) {
+        if (currentPage === 'register') html += renderRegisterPage();
+        else html += renderLoginPage();
+      } else {
+        if (currentPage === 'creator') html += await renderCreatorPage();
+        else if (currentPage === 'cards') html += await renderCardsPage();
+        else html += await renderCreatorPage();
+      }
+      
+      root.innerHTML = html;
+      
+      if (currentUser && currentPage === 'creator') {
+        loadFormStateFromLocal();
+        restoreFormValues();
+        setupNameFields();
+        populateTemplateGrid();
+        populateBorderGrid();
+        populateFontAndColor();
+        setupAccordions();
+        setupCustomImageUpload();
+        attachFormListeners();
+        
+        const eventType = document.getElementById('eventType');
+        if (eventType) eventType.addEventListener('change', setupNameFields);
+        
+        updateCardPreview();
+      }
+      
+      // Language switchers - use changeLanguage to preserve form state
+      document.querySelectorAll('.lang-switch').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const lang = btn.dataset.lang;
+          if (lang) changeLanguage(lang);
+        });
+      });
+      
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => { 
+          const page = btn.dataset.page; 
+          if (page) switchPage(page); 
+        });
+      });
+      
+      const modalContent = document.getElementById('upgradeModalContent');
+      if (modalContent && document.getElementById('upgradeModal')?.classList.contains('active')) {
+        modalContent.innerHTML = renderUpgradeModalContent();
+        updatePriceSummary();
+      }
+    }
+    
+    // Start app
+    initDatabase().then(() => {
+      initParticles();
+      animateParticles();
+      renderApp();
+    }).catch(err => {
+      console.error('Database init failed:', err);
+      document.getElementById('appRoot').innerHTML = '<div class="text-center text-white p-10">Failed to initialize app. Please refresh.</div>';
+    });
+  </script>
+  
+  <div id="upgradeModal" class="modal-overlay"><div class="modal-container" id="upgradeModalContent"></div></div>
+</body>
+</html>
