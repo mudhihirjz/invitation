@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Elimu Hub - Pakua Materials za Shule | Secondary & Advanced</title>
+  <!-- Tailwind CSS + Font Awesome + Google Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #f8fafc; }
+    /* Custom smooth transitions */
+    .tab-active {
+      background: white;
+      color: #0f3b5f;
+      font-weight: 600;
+      border-bottom: 3px solid #0f3b5f;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+    .card-hover {
+      transition: all 0.2s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -12px rgba(0,0,0,0.1);
+      border-color: #cbd5e1;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #e2e8f0;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 10px;
+    }
+    .fade-in {
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    .subject-badge {
+      background: #eef2ff;
+      color: #1e3a8a;
+      border-radius: 32px;
+      padding: 0.25rem 0.9rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body class="antialiased">
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
+    <!-- Header -->
+    <div class="text-center mb-8 md:mb-12">
+      <div class="flex justify-center mb-3">
+        <div class="bg-indigo-100 p-3 rounded-full shadow-sm">
+          <i class="fas fa-graduation-cap text-3xl text-indigo-700"></i>
+        </div>
+      </div>
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-800">📚 <span class="bg-gradient-to-r from-indigo-700 to-sky-700 bg-clip-text text-transparent">Elimu Hub</span></h1>
+      <p class="text-gray-500 mt-2 max-w-xl mx-auto">Pakua vitabu, notes, past papers — Secondary (Form 1-4) & Advanced Level (Form 5-6)</p>
+    </div>
+
+    <!-- Tab Navigation O-Level / A-Level -->
+    <div class="flex justify-center mb-8">
+      <div class="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200 inline-flex p-1">
+        <button id="tabOlevel" class="tab-btn px-6 py-2.5 rounded-xl text-gray-700 font-medium transition-all duration-200 flex items-center gap-2">
+          <i class="fas fa-school"></i> <span>O-Level · F1 - F4</span>
+        </button>
+        <button id="TabAlevel" class="tab-btn px-6 py-2.5 rounded-xl text-gray-700 font-medium transition-all duration-200 flex items-center gap-2">
+          <i class="fas fa-university"></i> <span>A-Level · F5 - F6 (Combinations)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Dynamic content panels -->
+    <div id="oLevelPanel" class="transition-all fade-in"></div>
+    <div id="aLevelPanel" class="transition-all fade-in hidden"></div>
+
+    <!-- Footer note -->
+    <div class="mt-16 text-center text-sm text-gray-400 border-t pt-6">
+      <i class="fas fa-download mr-1"></i> Bofya pakua ili kupata material — nyenzo zote ni za kujifunzia bure
+    </div>
+  </div>
+
+  <script>
+    // ---------- DATA MODELS ----------
+    // O-Level subjects (13 masomo kwa secondary school form 1-4)
+    const oLevelSubjects = [
+      "Mathematics", "English Language", "Kiswahili", "Biology", "Chemistry", "Physics",
+      "History", "Geography", "Civics", "Bookkeeping", "Commerce", "Literature in English", "Islamic Studies"
+    ];
+    
+    // A-Level Combinations (inaweza kuwa na masomo mengi kwenye kila combination)
+    // Tumejenga combination 7 za kawaida + zingine maarufu Tanzania & East Africa
+    const advancedCombinations = [
+      { name: "PCM (Physics, Chemistry, Mathematics)", subjects: ["Physics", "Chemistry", "Mathematics"] },
+      { name: "PCB (Physics, Chemistry, Biology)", subjects: ["Physics", "Chemistry", "Biology"] },
+      { name: "CBG (Chemistry, Biology, Geography)", subjects: ["Chemistry", "Biology", "Geography"] },
+      { name: "HGE (History, Geography, Economics)", subjects: ["History", "Geography", "Economics"] },
+      { name: "ECA (Economics, Commerce, Accountancy)", subjects: ["Economics", "Commerce", "Accountancy"] },
+      { name: "HKL (History, Kiswahili, English Language)", subjects: ["History", "Kiswahili", "English Language"] },
+      { name: "PGM (Physics, Geography, Mathematics)", subjects: ["Physics", "Geography", "Mathematics"] },
+      { name: "BAF (Biology, Agriculture, Food & Nutrition)", subjects: ["Biology", "Agriculture", "Food & Nutrition"] },
+      { name: "LLB (Law, Literature, English)", subjects: ["Law", "Literature in English", "English Language"] }
+    ];
+    
+    // Helper: Generate random realistic file size string
+    const getFileSize = () => {
+      const sizes = ['2.1 MB', '3.4 MB', '1.8 MB', '4.2 MB', '5.0 MB', '2.7 MB', '3.1 MB'];
+      return sizes[Math.floor(Math.random() * sizes.length)];
+    };
+    
+    // Helper: random file icon based on type (just for UI delight)
+    const getFileIcon = (type) => {
+      if (type === 'book') return 'fas fa-book-open';
+      if (type === 'note') return 'fas fa-sticky-note';
+      if (type === 'paper') return 'fas fa-file-pdf';
+      return 'fas fa-file-alt';
+    };
+    
+    // Generate materials for a given subject (subject name, level = 'olevel' or 'alevel', optional combination context)
+    // To make it feel real, each subject gets 2-4 download options (book, notes, past papers)
+    const generateMaterialsForSubject = (subject, level, combinationName = null) => {
+      const materials = [];
+      const materialTypes = [
+        { name: "📖 Complete Notes", icon: "note", typeKey: "notes" },
+        { name: "📘 Textbook / Reference", icon: "book", typeKey: "book" },
+        { name: "📄 Past Papers (2015-2023)", icon: "paper", typeKey: "paper" },
+        { name: "✍️ Revision Kit", icon: "note", typeKey: "notes" }
+      ];
+      // Randomly select 2-3 types to keep UI compact but rich
+      const shuffled = [...materialTypes];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      const selected = shuffled.slice(0, Math.floor(Math.random() * 2) + 2); // 2 or 3 items
+      
+      selected.forEach((item, idx) => {
+        let title = `${subject} - ${item.name}`;
+        if (level === 'alevel' && combinationName) {
+          title = `${combinationName} : ${subject} - ${item.name}`;
+        }
+        materials.push({
+          id: `${level}_${subject.replace(/\s/g, '')}_${idx}_${Date.now()}_${Math.random()}`,
+          title: title,
+          description: `Material ya ${subject} inayofaa kwa ${level === 'olevel' ? 'Form 1-4' : 'Advanced Level (Form 5-6)'}. Inasaidia kuandaa mitihani na kuelewa dhana.`,
+          fileSize: getFileSize(),
+          icon: getFileIcon(item.icon),
+          downloadUrl: "#",  // Simulated download (in real app would link to actual PDF)
+          type: item.typeKey
+        });
+      });
+      return materials;
+    };
+    
+    // Build O-Level data: key = subject name, value = list of material objects
+    const buildOLevelData = () => {
+      const data = {};
+      oLevelSubjects.forEach(subj => {
+        data[subj] = generateMaterialsForSubject(subj, 'olevel', null);
+      });
+      return data;
+    };
+    
+    // Build A-Level data: structure: { combinationName : { subjectName: [materials] } }
+    const buildALevelData = () => {
+      const comboData = {};
+      advancedCombinations.forEach(combo => {
+        const subjectsMap = {};
+        combo.subjects.forEach(subj => {
+          // generate materials for subject within this combination context
+          subjectsMap[subj] = generateMaterialsForSubject(subj, 'alevel', combo.name);
+        });
+        comboData[combo.name] = subjectsMap;
+      });
+      return comboData;
+    };
+    
+    // Store data globally for rendering
+    let oLevelStore = buildOLevelData();
+    let aLevelStore = buildALevelData();
+    
+    // ---------- RENDER FUNCTIONS ----------
+    
+    // Render O-Level panel (all subjects as cards, each subject expands materials)
+    const renderOLevel = () => {
+      const container = document.getElementById('oLevelPanel');
+      if (!container) return;
+      
+      let html = `<div class="space-y-6">
+        <div class="bg-gradient-to-r from-indigo-50 to-sky-50 rounded-2xl p-4 border border-indigo-100 shadow-sm">
+          <div class="flex items-center gap-3 flex-wrap">
+            <i class="fas fa-layer-group text-indigo-600 text-xl"></i>
+            <h2 class="text-xl font-semibold text-gray-800">📘 Masomo yote (${oLevelSubjects.length}) - Form 1 hadi Form 4</h2>
+          </div>
+          <p class="text-gray-600 text-sm mt-1">Bofya somo lolote kuona vitabu, notes na past papers za kupakua.</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">`;
+      
+      // Loop through each subject
+      for (let [subject, materials] of Object.entries(oLevelStore)) {
+        html += `
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden transition-all hover:shadow-md">
+            <div class="p-4 border-b border-gray-100 bg-gray-50/40 flex justify-between items-center">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <i class="fas fa-book-open text-indigo-600 text-sm"></i>
+                </div>
+                <h3 class="font-bold text-lg text-gray-800">${subject}</h3>
+              </div>
+              <span class="subject-badge"><i class="far fa-copy mr-1"></i>${materials.length} nyenzo</span>
+            </div>
+            <div class="p-4 space-y-3 max-h-80 overflow-y-auto">
+        `;
+        if (materials.length === 0) {
+          html += `<p class="text-gray-400 text-sm italic">Hakuna material kwa sasa, lakini inaongezwa.</p>`;
+        } else {
+          materials.forEach(mat => {
+            html += `
+              <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-100 card-hover transition">
+                <div class="flex items-center gap-3">
+                  <i class="${mat.icon} text-indigo-500 w-5 text-center"></i>
+                  <div>
+                    <p class="text-sm font-medium text-gray-800">${mat.title}</p>
+                    <div class="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+                      <span><i class="far fa-file"></i> ${mat.fileSize}</span>
+                      <span>• <i class="fas fa-download"></i> PDF</span>
+                    </div>
+                  </div>
+                </div>
+                <a href="${mat.downloadUrl}" class="bg-white hover:bg-indigo-50 border border-indigo-200 text-indigo-700 text-sm font-medium px-3 py-1.5 rounded-full transition flex items-center gap-1 shadow-sm">
+                  <i class="fas fa-download"></i> Pakua
+                </a>
+              </div>
+            `;
+          });
+        }
+        html += `</div></div>`;
+      }
+      html += `</div></div>`;
+      container.innerHTML = html;
+    };
+    
+    // Render A-Level panel: Combinations na kwa kila combination, show subjects + materials expandable? better to display per subject inside combination
+    const renderALevel = () => {
+      const container = document.getElementById('aLevelPanel');
+      if (!container) return;
+      
+      let html = `<div class="space-y-7">
+        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100">
+          <div class="flex items-center gap-3 flex-wrap">
+            <i class="fas fa-layer-group text-teal-600 text-xl"></i>
+            <h2 class="text-xl font-semibold text-gray-800">🎓 Advanced Level (Form 5-6) — Masomo kwa Combinations</h2>
+          </div>
+          <p class="text-gray-600 text-sm">Chagua combination yako na upakue material za kila somo: notes, past papers, na vitabu.</p>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">`;
+      
+      // Loop through each combination
+      for (let [comboName, subjectsMap] of Object.entries(aLevelStore)) {
+        html += `
+          <div class="bg-white rounded-xl border border-gray-200 shadow-md overflow-hidden">
+            <div class="bg-gray-800 text-white px-5 py-3 flex justify-between items-center">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-users-viewfinder"></i>
+                <span class="font-semibold text-base tracking-wide">${comboName}</span>
+              </div>
+              <span class="bg-white/20 text-xs px-2 py-1 rounded-full">${Object.keys(subjectsMap).length} masomo</span>
+            </div>
+            <div class="divide-y divide-gray-100">
+        `;
+        // For each subject inside combination
+        for (let [subject, materialsList] of Object.entries(subjectsMap)) {
+          html += `
+            <div class="p-4 hover:bg-gray-50 transition">
+              <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-chalkboard-user text-emerald-600"></i>
+                  <h4 class="font-bold text-gray-800">${subject}</h4>
+                </div>
+                <span class="text-[11px] bg-gray-100 px-2 py-0.5 rounded-full text-gray-500"><i class="far fa-copy"></i> ${materialsList.length} faili</span>
+              </div>
+              <div class="space-y-2 mt-2">
+          `;
+          if (materialsList.length === 0) {
+            html += `<p class="text-gray-400 text-xs italic">Hakuna nyenzo bado lakini tutaongeza.</p>`;
+          } else {
+            materialsList.forEach(mat => {
+              html += `
+                <div class="flex items-center justify-between bg-white rounded-lg p-2 border border-gray-100 shadow-sm hover:shadow transition">
+                  <div class="flex items-center gap-2">
+                    <i class="${mat.icon} text-indigo-500 w-5"></i>
+                    <div>
+                      <p class="text-sm font-medium text-gray-700">${mat.title.replace(comboName + ' : ', '')}</p>
+                      <div class="text-[11px] text-gray-400 flex gap-2">
+                        <span><i class="far fa-save"></i> ${mat.fileSize}</span>
+                        <span><i class="fas fa-file-pdf"></i> PDF</span>
+                      </div>
+                    </div>
+                  </div>
+                  <a href="${mat.downloadUrl}" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1">
+                    <i class="fas fa-download"></i> Pakua
+                  </a>
+                </div>
+              `;
+            });
+          }
+          html += `</div></div>`;
+        }
+        html += `</div></div>`;
+      }
+      html += `</div></div>`;
+      container.innerHTML = html;
+    };
+    
+    // Initialize / refresh both panels
+    const refreshUI = () => {
+      renderOLevel();
+      renderALevel();
+    };
+    
+    // ------- Tab Switching & Active Styling -------
+    const tabOlevelBtn = document.getElementById('tabOlevel');
+    const tabAlevelBtn = document.getElementById('TabAlevel');
+    const panelOlevel = document.getElementById('oLevelPanel');
+    const panelAlevel = document.getElementById('aLevelPanel');
+    
+    const setActiveTab = (active) => {
+      // Reset button styles
+      [tabOlevelBtn, tabAlevelBtn].forEach(btn => {
+        btn.classList.remove('tab-active', 'bg-white', 'shadow-sm', 'text-indigo-800');
+        btn.classList.add('text-gray-600', 'bg-transparent');
+      });
+      if (active === 'olevel') {
+        tabOlevelBtn.classList.add('tab-active', 'bg-white', 'shadow-sm', 'text-indigo-800');
+        panelOlevel.classList.remove('hidden');
+        panelAlevel.classList.add('hidden');
+      } else {
+        tabAlevelBtn.classList.add('tab-active', 'bg-white', 'shadow-sm', 'text-indigo-800');
+        panelOlevel.classList.add('hidden');
+        panelAlevel.classList.remove('hidden');
+      }
+    };
+    
+    // Attach event listeners
+    tabOlevelBtn.addEventListener('click', () => {
+      setActiveTab('olevel');
+      // optional re-render if needed but data static
+    });
+    tabAlevelBtn.addEventListener('click', () => {
+      setActiveTab('alevel');
+    });
+    
+    // initial rendering & set default active tab (O-Level)
+    refreshUI();
+    setActiveTab('olevel');
+    
+    // Optional: add a little "Download" simulation alert to give feedback (since downloadUrl is "#")
+    // But better to override click on .pakua-link in dynamic content? Use event delegation
+    document.body.addEventListener('click', (e) => {
+      const downloadBtn = e.target.closest('a[href="#"]');
+      if (downloadBtn && (downloadBtn.innerText.includes('Pakua') || downloadBtn.querySelector('.fa-download'))) {
+        e.preventDefault();
+        // extract material title from nearby element
+        let titleElem = downloadBtn.closest('.flex')?.querySelector('.font-medium, .text-sm.font-medium');
+        let materialName = titleElem ? titleElem.innerText : 'Material';
+        // Show beautiful toast-like alert with mini-notification (non-intrusive)
+        const toast = document.createElement('div');
+        toast.innerText = `✅ Imetengenezwa: "${materialName.substring(0, 50)}" - Anza kupakua (demo)`;
+        toast.className = 'fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-2.5 rounded-full shadow-lg text-sm font-medium z-50 flex items-center gap-2 animate-bounce-slow';
+        toast.style.animation = 'fadeInUp 0.2s ease-out';
+        document.body.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          setTimeout(() => toast.remove(), 400);
+        }, 2800);
+        // simulate actual download info in console (real integration would use real file)
+        console.log(`[DOWNLOAD SIMULATION] ${materialName} - file would be served.`);
+      }
+    });
+    
+    // Add style for toast animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translate(-50%, 20px); }
+        to { opacity: 1; transform: translate(-50%, 0); }
+      }
+      .animate-bounce-slow {
+        animation: fadeInUp 0.2s ease-out;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    // small console log to confirm app ready
+    console.log("Elimu Hub SPA imeanza: O-Level masomo 13, A-Level combinations kumi (mbalimbali)");
+  </script>
+</body>
+</html>
