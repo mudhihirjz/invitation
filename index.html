@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>💖 Kwa Mpenzi Wangu - Upendo Wetu 💖</title>
+    <!-- Font Awesome 6 (Free Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            /* ROSE KUBWA BACKGROUND - picha moja ya rose inayojaza skrini nzima */
+            background: url('https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=1600&q=80') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', 'Poppins', 'Quicksand', system-ui, -apple-system, 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Overlay nyepesi sana ili kuongeza uwezo wa kusoma maneno - si nyeupe, ni giza kidogo */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* --- ANIMATION 1: GOLDEN SHINE STARS FADED OUT FROM CENTER (infinite) --- */
+        .stars-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* --- ANIMATION 2: DROPPING ROSE LEAVES (infinite) --- */
+        .leaf-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 6;
+            overflow: hidden;
+        }
+
+        .leaf {
+            position: absolute;
+            top: -40px;
+            font-size: 1.6rem;
+            opacity: 0.9;
+            animation: fallRoseLeaf linear infinite;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+
+        @keyframes fallRoseLeaf {
+            0% {
+                transform: translateY(-20px) rotate(0deg);
+                opacity: 0.9;
+            }
+            80% {
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Main content container - HAKUNA BACKGROUND KABISA! */
+        .love-content {
+            position: relative;
+            z-index: 20;
+            max-width: 850px;
+            width: 100%;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        /* header emojis zone - transparent */
+        .emoji-header {
+            font-size: 2.8rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 12px;
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .emoji-header i {
+            background: rgba(0,0,0,0.3);
+            padding: 8px;
+            border-radius: 60%;
+            text-shadow: 0 2px 8px gold;
+            transition: transform 0.2s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .emoji-header i:hover {
+            transform: scale(1.1);
+        }
+
+        /* title style - transparent background */
+        .greeting {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff5e6, #ffe0b5, #ffc8a2);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin: 10px 0 20px 0;
+            letter-spacing: -0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .greeting i {
+            font-size: 2rem;
+            background: none;
+            -webkit-background-clip: unset;
+            background-clip: unset;
+            color: #ffd966;
+            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.5));
+        }
+
+        /* message container - HAKUNA BACKGROUND, HAKUNA CARD, MANENO MOJA KWA MOJA JUU YA ROSE */
+        .message-container {
+            margin: 1.5rem 0 1.2rem;
+            padding: 0.5rem;
+        }
+
+        .dynamic-text {
+            font-size: 1.45rem;
+            line-height: 1.7;
+            font-weight: 550;
+            color: #fff5e8;
+            text-align: center;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.6), 1px 1px 3px rgba(0,0,0,0.8);
+        }
+
+        /* individual word styling for drop animation - no white background */
+        .word-span {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(-60px);
+            animation: dropWordNice 0.55s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+            margin: 0 4px 8px 4px;
+            font-size: 1.35rem;
+            font-weight: 550;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(3px);
+            padding: 4px 10px;
+            border-radius: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            color: #fff5e8;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        @keyframes dropWordNice {
+            0% {
+                opacity: 0;
+                transform: translateY(-80px) rotateX(-25deg);
+            }
+            60% {
+                opacity: 0.85;
+                transform: translateY(6px) rotateX(2deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) rotateX(0);
+            }
+        }
+
+        /* signature - transparent background */
+        .signature {
+            margin-top: 1.8rem;
+            font-size: 1.35rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            color: #ffe6cc;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(5px);
+            padding: 12px 24px;
+            border-radius: 90px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .signature i {
+            font-size: 1.8rem;
+            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.5));
+        }
+
+        .btn-love {
+            background: rgba(255, 77, 109, 0.85);
+            backdrop-filter: blur(8px);
+            border: none;
+            color: white;
+            font-size: 1rem;
+            padding: 10px 28px;
+            border-radius: 60px;
+            margin-top: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 5px 0 #9e2a4b;
+            font-family: inherit;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+        }
+
+        .btn-love:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #9e2a4b;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .love-content {
+                padding: 0.8rem;
+            }
+            .dynamic-text {
+                font-size: 1.05rem;
+            }
+            .word-span {
+                font-size: 0.95rem;
+                margin: 0 2px 5px 2px;
+                padding: 3px 8px;
+            }
+            .greeting {
+                font-size: 1.6rem;
+            }
+            .emoji-header i {
+                font-size: 1.8rem;
+            }
+            .signature {
+                font-size: 1rem;
+                padding: 8px 16px;
+            }
+        }
+
+        /* custom heart beat effect */
+        .fa-heart {
+            animation: gentleBeat 1.6s infinite;
+        }
+
+        @keyframes gentleBeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.18); text-shadow: 0 0 5px #ff2e63; }
+        }
+
+        footer {
+            font-size: 0.7rem;
+            margin-top: 1.5rem;
+            opacity: 0.8;
+            color: #ffefdb;
+            position: relative;
+            z-index: 20;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animation 1: Golden Shine Stars -->
+    <canvas id="starCanvas" class="stars-canvas"></canvas>
+
+    <!-- Animation 2: Dropping Rose Leaves -->
+    <div class="leaf-container" id="leafContainer"></div>
+
+    <!-- Main content - HAKUNA BACKGROUND NYEUPE, HAKUNA CARD -->
+    <div class="love-content">
+        <div class="emoji-header">
+            <i class="fas fa-heart" style="color: #ff6680;"></i>
+            <i class="fas fa-crown" style="color: #ffd966;"></i>
+            <i class="fas fa-infinity" style="color: #ff99bb;"></i>
+            <i class="fas fa-dove" style="color: #ffb366;"></i>
+            <i class="fas fa-gem" style="color: #ffccdd;"></i>
+        </div>
+
+        <div class="greeting">
+            <i class="fas fa-rose" style="color: #ff99cc;"></i>  
+            <span>💗 UPENDO WETU 💗</span>  
+            <i class="fas fa-rose" style="color: #ff99cc;"></i>
+        </div>
+
+        <div class="message-container">
+            <div id="loveMessage" class="dynamic-text">
+                <!-- maneno yataanguka moja kwa moja juu ya rose -->
+            </div>
+        </div>
+
+        <div class="signature">
+            <i class="fas fa-kiss-wink-heart" style="color:#ff99bb;"></i>
+            <span>✨ Mpenzi wako daima ✨</span>
+            <i class="fas fa-hand-holding-heart" style="color:#ff99bb;"></i>
+        </div>
+
+        <button class="btn-love" id="replayBtn"><i class="fas fa-sync-alt"></i> Onyesha upya maneno</button>
+    </div>
+    <footer>⭐ kila nyota inang'aa kwa upendo wetu | 🌹 upendo unaoangaza juu ya rose yangu</footer>
+
+    <script>
+        // -------------------------------
+        // 1. GOLDEN STARS FROM CENTER (fading out, infinite)
+        // -------------------------------
+        const canvas = document.getElementById('starCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initStars();
+        });
+
+        let stars = [];
+
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 120; i++) {
+                stars.push({
+                    angle: Math.random() * Math.PI * 2,
+                    distance: 5 + Math.random() * Math.min(width, height) * 0.55,
+                    speed: 0.6 + Math.random() * 1.8,
+                    size: 2 + Math.random() * 5,
+                    alpha: 0.6 + Math.random() * 0.4,
+                });
+            }
+        }
+
+        function drawStars() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, width, height);
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const time = Date.now() / 800;
+            for (let s of stars) {
+                let dynamicDist = s.distance + Math.sin(time * 0.8 + s.angle) * 8;
+                let x = centerX + Math.cos(s.angle + time * 0.15) * dynamicDist;
+                let y = centerY + Math.sin(s.angle + time * 0.15) * dynamicDist;
+                let flicker = 0.4 + 0.6 * Math.sin(time * 1.5 + s.angle * 3);
+                let opacity = Math.max(0, s.alpha * flicker * 0.85);
+                ctx.beginPath();
+                ctx.arc(x, y, s.size * (0.6 + flicker * 0.5), 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 215, 0, ${opacity})`;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(x-1, y-1, s.size * 0.35, 0, Math.PI*2);
+                ctx.fillStyle = `rgba(255, 245, 160, ${opacity * 0.9})`;
+                ctx.fill();
+            }
+            const grad = ctx.createRadialGradient(centerX, centerY, 8, centerX, centerY, 90);
+            grad.addColorStop(0, 'rgba(255, 200, 70, 0.2)');
+            grad.addColorStop(1, 'rgba(255, 80, 120, 0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, width, height);
+            requestAnimationFrame(drawStars);
+        }
+
+        resizeCanvas();
+        initStars();
+        drawStars();
+
+        // -------------------------------
+        // 2. DROPPING ROSE LEAVES (infinite)
+        // -------------------------------
+        const leafContainer = document.getElementById('leafContainer');
+        const roseLeafSet = ['🌹','🍂','🥀','🌿','🌹','🍁','🌸'];
+
+        function createLeaf() {
+            const leaf = document.createElement('div');
+            leaf.classList.add('leaf');
+            const randomLeaf = roseLeafSet[Math.floor(Math.random() * roseLeafSet.length)];
+            leaf.textContent = randomLeaf;
+            const size = 1.2 + Math.random() * 1.5;
+            leaf.style.fontSize = `${size}rem`;
+            leaf.style.left = Math.random() * 100 + '%';
+            const duration = 5 + Math.random() * 9;
+            leaf.style.animationDuration = `${duration}s`;
+            leaf.style.animationDelay = `${Math.random() * 5}s`;
+            leaf.style.opacity = 0.5 + Math.random() * 0.5;
+            if(randomLeaf === '🌹') leaf.style.color = '#ff66a3';
+            if(randomLeaf === '🥀') leaf.style.color = '#cc5555';
+            if(randomLeaf === '🌿') leaf.style.color = '#88b35f';
+            else leaf.style.color = '#ffb3c6';
+            leafContainer.appendChild(leaf);
+            setTimeout(() => {
+                leaf.remove();
+            }, duration * 1000);
+        }
+        setInterval(createLeaf, 380);
+        for(let i=0;i<14;i++) setTimeout(createLeaf, i*140);
+
+        // -------------------------------
+        // 3. DROP DOWN TEXT MESSAGE
+        // -------------------------------
+        const fullMessage = `Najua siku hizi tumekuwa sometimes kama tunagombana fulani hivi, lakini me nahisi ni ishara kubwa ya mapenzi yetu kuzidi kukua, na wivu kuongezeka. Mpenzi nataka ujue kitu, tambua nakupenda sana tu, na nimechagua kuwa nawe no matter what..😊. Napenda kusema unisamehe kwa pale ambapo nimekuwa nikikukwaza, ni kupitiliza tu katika kukuzoea mpenzi.`;
+        
+        function tokenizeMessage(msg) {
+            let words = msg.split(/(\s+)/).filter(w => w.trim().length > 0 || w === ' ');
+            let result = [];
+            for(let w of words) {
+                if(w === ' ') {
+                    result.push(' ');
+                } else {
+                    result.push(w);
+                }
+            }
+            return result;
+        }
+
+        const tokens = tokenizeMessage(fullMessage);
+        const messageDiv = document.getElementById('loveMessage');
+
+        function buildAndDropMessage() {
+            messageDiv.innerHTML = '';
+            for(let i=0; i<tokens.length; i++) {
+                let token = tokens[i];
+                if(token === ' ') {
+                    messageDiv.appendChild(document.createTextNode(' '));
+                } else {
+                    const span = document.createElement('span');
+                    span.className = 'word-span';
+                    span.textContent = token;
+                    const delay = i * 42;
+                    span.style.animationDelay = `${delay}ms`;
+                    messageDiv.appendChild(span);
+                }
+            }
+        }
+
+        buildAndDropMessage();
+
+        const replayBtn = document.getElementById('replayBtn');
+        replayBtn.addEventListener('click', () => {
+            buildAndDropMessage();
+            const content = document.querySelector('.love-content');
+            content.style.transform = 'scale(0.98)';
+            setTimeout(() => { content.style.transform = ''; }, 200);
+        });
+
+        // Floating hearts on click
+        function createFloatingHeart() {
+            const heart = document.createElement('i');
+            heart.className = 'fas fa-heart';
+            heart.style.position = 'fixed';
+            heart.style.bottom = '10px';
+            heart.style.left = Math.random() * 100 + '%';
+            heart.style.color = `rgba(255, 120, 150, ${0.5+Math.random()*0.5})`;
+            heart.style.fontSize = 1 + Math.random() * 20 + 'px';
+            heart.style.pointerEvents = 'none';
+            heart.style.zIndex = 999;
+            heart.style.opacity = '0.8';
+            heart.style.transition = 'all 2.2s ease';
+            heart.style.filter = 'drop-shadow(0 0 3px gold)';
+            document.body.appendChild(heart);
+            setTimeout(() => {
+                heart.style.transform = 'translateY(-220px) rotate(20deg)';
+                heart.style.opacity = '0';
+                setTimeout(() => heart.remove(), 2200);
+            }, 50);
+        }
+        
+        const loveContent = document.querySelector('.love-content');
+        loveContent.addEventListener('click', (e) => {
+            for(let i=0;i<3;i++) setTimeout(createFloatingHeart, i*80);
+        });
+    </script>
+</body>
+</html>
